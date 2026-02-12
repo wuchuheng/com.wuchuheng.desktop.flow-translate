@@ -3,12 +3,16 @@ import { Tabs } from 'antd';
 import { AiSettingsTab } from './components/AiSettingsTab';
 import { ThemeSettingsTab } from './components/ThemeSettingsTab';
 import { GeneralSettingsTab } from './components/GeneralSettingsTab';
+import { AboutTab } from './components/AboutTab';
+import { useTranslation } from 'react-i18next';
 
 export const SettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const items = [
     { label: 'AI Intelligence', key: 'ai', children: <AiSettingsTab /> },
     { label: 'Theme & Appearance', key: 'theme', children: <ThemeSettingsTab /> },
     { label: 'General', key: 'general', children: <GeneralSettingsTab /> },
+    { label: t('about.title'), key: 'about', children: <AboutTab /> },
   ];
 
   return (

@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 // English translations
 const enTranslations = {
   home: {
-    title: 'Welcome to electron-app-name!',
+    title: 'Welcome to Flow Translate!',
     successMessage: 'Application running successfully!',
     description:
       'Your desktop application is now ready! Built with Electron, React, and Tailwind CSS for optimal performance.',
@@ -46,7 +46,7 @@ const enTranslations = {
     },
   },
   about: {
-    title: 'About electron-app-name',
+    title: 'About Flow Translate',
     subtitle: 'Desktop Application Information',
     version: {
       title: 'Version Information',
@@ -95,7 +95,7 @@ const enTranslations = {
 // Chinese translations
 const zhTranslations = {
   home: {
-    title: '欢迎使用 electron-app-name！',
+    title: '欢迎使用 Flow Translate！',
     successMessage: '应用程序运行成功！',
     description: '您的桌面应用程序已准备就绪！使用 Electron、React 和 Tailwind CSS 构建，性能卓越。',
     database: {
@@ -135,7 +135,7 @@ const zhTranslations = {
     },
   },
   about: {
-    title: '关于 electron-app-name',
+    title: '关于 Flow Translate',
     subtitle: '桌面应用程序信息',
     version: {
       title: '版本信息',
