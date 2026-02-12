@@ -126,11 +126,22 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   apiKey: '',
   model: 'gpt-4o',
   enableThinking: false,
-  systemPrompt: 'You are a professional translator. Translate Chinese to English. Output ONLY the English translation.',
+  systemPrompt: 'Translate the following content to English. Output ONLY the English translation.\n\n<content>\n{text}\n</content>',
 };
 
 export const CONFIG_KEYS = {
   AI: 'ai_config',
   THEME: 'theme_config',
   HOTKEYS: 'app_hotkeys',
+  APP: 'app_config',
 } as const;
+
+export type AppConfig = {
+  runInBackground: boolean;
+  autoStart: boolean;
+};
+
+export const DEFAULT_APP_CONFIG: AppConfig = {
+  runInBackground: true,
+  autoStart: false,
+};

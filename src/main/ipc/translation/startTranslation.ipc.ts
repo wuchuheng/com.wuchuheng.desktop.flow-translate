@@ -5,7 +5,7 @@ import { BrowserWindow } from 'electron';
 import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
 import OpenAI from 'openai';
-import { AI_PROVIDER_CATALOG, CONFIG_KEYS, AiConfig } from '../../../shared/constants';
+import { AI_PROVIDER_CATALOG, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '../../../shared/constants';
 import { Stream } from 'openai/streaming';
 import { ChatCompletionChunk, ChatCompletionCreateParams } from 'openai/resources/chat/completions';
 
@@ -41,20 +41,21 @@ const startTranslation = async (payload: { text: string; backspaceCount: number 
 
     let thinkingParams = {};
     if (currentProvider?.thinkingConfig) {
-      thinkingParams = enableThinking ? currentProvider.thinkingConfig.enable : currentProvider.thinkingConfig.disable;
+      thinkingParams = enableThinking 
+        ? currentProvider.thinkingConfig.enable 
+        : currentProvider.thinkingConfig.disable;
     }
 
-    const defaultPrompt =
-      'You are a professional translator. Translate Chinese to English. Output ONLY the English translation.';
-    const promptTemplate = systemPrompt || defaultPrompt;
+    const promptTemplate = systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;
     let messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
     if (promptTemplate.includes('{text}')) {
-      messages = [{ role: 'system', content: promptTemplate.replace('{text}', text) }];
+      // If the template contains {text}, we treat it as a single user message for maximum compatibility
+      messages = [{ role: 'user', content: promptTemplate.replace('{text}', text) }];
     } else {
       messages = [
         { role: 'system', content: promptTemplate },
-        { role: 'user', content: text },
+        { role: 'user', content: `<content>\n${text}\n</content>` },
       ];
     }
 

@@ -19,6 +19,12 @@ type CustomDelta = ChatCompletionChunk.Choice.Delta & {
   reasoning_content?: string;
 };
 
+type ChatMessage = {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  reasoning?: string;
+};
+
 export const AiSettingsTab: React.FC = () => {
   const { config, saveConfig, loading: configLoading } = useConfig<AiConfig>(CONFIG_KEYS.AI, DEFAULT_AI_CONFIG);
   const { fetchingModels, modelOptions, fetchModels, createClient } = useOpenAI();
@@ -26,16 +32,20 @@ export const AiSettingsTab: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   // Playground State
-  const [testInput, setTestInput] = useState('你好，世界');
-  const [testResult, setTestResult] = useState('');
-  const [testReasoning, setTestReasoning] = useState('');
+  const [testInput, setTestInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isTesting, setIsTesting] = useState(false);
+  const chatEndRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!configLoading) {
       form.setFieldsValue(config);
     }
   }, [config, configLoading, form]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   const handleFetchModels = async () => {
     const values = await form.validateFields(['providerId', 'apiKey', 'customBaseUrl']);
@@ -46,10 +56,11 @@ export const AiSettingsTab: React.FC = () => {
   };
 
   const handleTestChat = async () => {
-    if (!testInput.trim()) return;
+    if (!testInput.trim() || isTesting) return;
+    
+    const currentInput = testInput;
+    setTestInput('');
     setIsTesting(true);
-    setTestResult('');
-    setTestReasoning('');
 
     try {
       const values = await form.validateFields();
@@ -64,9 +75,27 @@ export const AiSettingsTab: React.FC = () => {
           : currentProvider.thinkingConfig.disable;
       }
 
+      const promptTemplate = values.systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;
+      
+      const newMessages: ChatMessage[] = [...chatMessages];
+      
+      // If first message, handle system prompt logic
+      if (newMessages.length === 0) {
+        if (promptTemplate.includes('{text}')) {
+          newMessages.push({ role: 'user', content: promptTemplate.replace('{text}', currentInput) });
+        } else {
+          newMessages.push({ role: 'system', content: promptTemplate });
+          newMessages.push({ role: 'user', content: `<content>\n${currentInput}\n</content>` });
+        }
+      } else {
+        newMessages.push({ role: 'user', content: currentInput });
+      }
+
+      setChatMessages([...newMessages, { role: 'assistant', content: '' }]);
+
       const params: CustomChatParams = {
         model: values.model,
-        messages: [{ role: 'user', content: testInput }],
+        messages: newMessages.map(m => ({ role: m.role, content: m.content })),
         stream: true,
         ...thinkingParams,
       };
@@ -75,23 +104,45 @@ export const AiSettingsTab: React.FC = () => {
         params as unknown as ChatCompletionCreateParams
       )) as Stream<ChatCompletionChunk>;
 
+      let fullContent = '';
+      let fullReasoning = '';
+
       for await (const chunk of stream) {
         const delta = chunk.choices[0]?.delta as CustomDelta;
 
         if (delta?.content) {
-          setTestResult(prev => prev + delta.content);
+          fullContent += delta.content;
+          setChatMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            last.content = fullContent;
+            return next;
+          });
         }
 
         if (delta?.reasoning_content) {
-          setTestReasoning(prev => prev + delta.reasoning_content);
+          fullReasoning += delta.reasoning_content;
+          setChatMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            last.reasoning = fullReasoning;
+            return next;
+          });
         }
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : JSON.stringify(error);
-      setTestResult(prev => prev + `\n[Error: ${msg}]`);
+      setChatMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: `[Error: ${msg}]` }
+      ]);
     } finally {
       setIsTesting(false);
     }
+  };
+
+  const clearChat = () => {
+    setChatMessages([]);
   };
 
   const handleSave = async () => {
@@ -193,29 +244,38 @@ export const AiSettingsTab: React.FC = () => {
 
       {/* RIGHT: PLAYGROUND */}
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-[#1e1e2e] lg:col-span-5">
-        <div className="border-b bg-gray-50/50 p-4 dark:border-white/5 dark:bg-white/5">
+        <div className="flex items-center justify-between border-b bg-gray-50/50 p-4 dark:border-white/5 dark:bg-white/5">
           <h3 className="m-0 font-semibold text-gray-700 dark:text-gray-200">Test Playground</h3>
+          <Button size="small" onClick={clearChat} className="text-xs">Clear Chat</Button>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto bg-gray-50 p-4 dark:bg-[#11111b]">
-          {/* Reasoning Block */}
-          {enableThinking && testReasoning && (
-            <div className="mb-4 rounded-lg border-l-4 border-blue-400 bg-white p-3 text-xs shadow-sm dark:bg-white/5">
-              <div className="mb-1 font-bold uppercase tracking-wider text-blue-500">Thinking Process</div>
-              <div className="whitespace-pre-wrap text-gray-500 dark:text-gray-400">{testReasoning}</div>
-            </div>
-          )}
-
-          {/* Result Block */}
-          {testResult ? (
-            <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800 dark:text-gray-200">
-              {testResult}
-            </div>
-          ) : (
+        <div className="custom-scrollbar flex-1 overflow-y-auto bg-gray-50 p-4 dark:bg-[#11111b] flex flex-col gap-4">
+          {chatMessages.length === 0 && (
             <div className="flex h-full items-center justify-center text-sm text-gray-400">
-              AI response will appear here...
+              Start a conversation to test your settings...
             </div>
           )}
+          
+          {chatMessages.map((m, i) => (
+            <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`max-w-[90%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                m.role === 'user' 
+                  ? 'bg-blue-600 text-white rounded-tr-none' 
+                  : m.role === 'system'
+                  ? 'bg-gray-200 text-gray-600 italic rounded-tl-none dark:bg-gray-800 dark:text-gray-400'
+                  : 'bg-white text-gray-800 rounded-tl-none dark:bg-[#252539] dark:text-gray-200'
+              }`}>
+                {enableThinking && m.reasoning && (
+                  <div className="mb-2 rounded border-l-2 border-blue-400 bg-blue-50/50 p-2 text-xs italic text-gray-500 dark:bg-blue-900/10">
+                    <div className="font-bold text-blue-500 text-[10px] uppercase mb-1">Reasoning</div>
+                    {m.reasoning}
+                  </div>
+                )}
+                <div className="whitespace-pre-wrap">{m.content || (isTesting && i === chatMessages.length - 1 ? '...' : '')}</div>
+              </div>
+            </div>
+          ))}
+          <div ref={chatEndRef} />
         </div>
 
         <div className="border-t bg-white p-4 dark:border-white/5 dark:bg-[#1e1e2e]">
@@ -223,8 +283,14 @@ export const AiSettingsTab: React.FC = () => {
             <TextArea
               value={testInput}
               onChange={e => setTestInput(e.target.value)}
-              placeholder="Enter test message..."
-              autoSize={{ minRows: 2, maxRows: 6 }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleTestChat();
+                }
+              }}
+              placeholder="Send a message..."
+              autoSize={{ minRows: 1, maxRows: 4 }}
               className="pr-12"
             />
             <Button
@@ -232,8 +298,8 @@ export const AiSettingsTab: React.FC = () => {
               shape="circle"
               icon={isTesting ? <LoadingOutlined /> : <SendOutlined />}
               onClick={handleTestChat}
-              disabled={isTesting}
-              className="absolute right-2 bottom-2 shadow-md"
+              disabled={isTesting || !testInput.trim()}
+              className="absolute right-2 bottom-1 shadow-md"
             />
           </div>
         </div>

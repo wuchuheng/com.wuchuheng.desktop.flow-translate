@@ -8,7 +8,13 @@ import { logger } from './utils/logger';
 import { capturePreviousWindow } from './utils/win-api-helper';
 import { onShow } from './ipc/window/onShow.ipc';
 import { Config } from './database/entities/config.entity';
-import { CONFIG_KEYS } from '../shared/constants';
+import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '../shared/constants';
+import { createTray } from './utils/tray-helper';
+
+declare global {
+  // eslint-disable-next-line no-var
+  var isForceQuitting: boolean | undefined;
+}
 
 // Ensure UTF-8 encoding on Windows
 if (process.platform === 'win32') {
@@ -71,6 +77,9 @@ export const registerGlobalShortcut = async () => {
 
 app.on('ready', async () => {
   try {
+    // 1. Initialize Tray
+    createTray(getMainWindow);
+
     // 2. Handle the logic.
     // 2.1 Create the main window.
     mainWindow = await createWindow();
@@ -93,10 +102,18 @@ app.on('ready', async () => {
   }
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on('window-all-closed', async () => {
+  const repo = getDataSource().getRepository(Config);
+  const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.APP });
+  const appConfig = (configEntity?.value as AppConfig) || DEFAULT_APP_CONFIG;
+
+  if (process.platform !== 'darwin' && !appConfig.runInBackground) {
     app.quit();
   }
+});
+
+app.on('before-quit', () => {
+  global.isForceQuitting = true;
 });
 
 app.on('activate', () => {

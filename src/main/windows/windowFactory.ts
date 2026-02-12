@@ -1,9 +1,17 @@
 import { BrowserWindow, dialog } from 'electron';
 import net from 'node:net';
 import { logger } from '../utils/logger';
+import { getDataSource } from '../database/data-source';
+import { Config } from '../database/entities/config.entity';
+import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '../../shared/constants';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+declare global {
+  // eslint-disable-next-line no-var
+  var isForceQuitting: boolean | undefined;
+}
 
 const parseEntryPort = () => {
   try {
@@ -175,7 +183,23 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       logger.info('Main window blurred');
     });
 
-    mainWindow.on('close', () => {
+    mainWindow.on('close', async event => {
+      if (!global.isForceQuitting) {
+        try {
+          const repo = getDataSource().getRepository(Config);
+          const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.APP });
+          const appConfig = (configEntity?.value as AppConfig) || DEFAULT_APP_CONFIG;
+
+          if (appConfig.runInBackground) {
+            event.preventDefault();
+            mainWindow.hide();
+            logger.info('Main window hidden instead of closed');
+            return;
+          }
+        } catch (error) {
+          logger.error('Error checking runInBackground config:', error);
+        }
+      }
       logger.info('Main window closing');
     });
 
@@ -222,9 +246,9 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
     });
 
     // Enable debugging for the floating window
-    if (process.env.NODE_ENV === 'development') {
-      floatingWindow.webContents.openDevTools({ mode: 'detach' });
-    }
+    // if (process.env.NODE_ENV === 'development') {
+    //   floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    // }
 
     // Remove the title bar and menu for the floating window
     floatingWindow.setMenu(null);
