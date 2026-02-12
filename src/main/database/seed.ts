@@ -1,11 +1,11 @@
 import { logger } from '../utils/logger';
 import { getDataSource } from './data-source';
-import { Welcome } from './entities/welcom';
+import { Welcome } from './entities/welcome.entity';
 
 /**
  * Seed data for the welcome table
  */
-const defaultWelcomTitle = [{ title: 'Hello, this is a welcome message from database.' }];
+const defaultWelcomeTitle = [{ title: 'Hello, this is a welcome message from database.' }];
 
 /**
  * Seeds the bucket table with initial data
@@ -14,28 +14,28 @@ export const seedBucketTable = async (): Promise<void> => {
   try {
     // 1. Input handling
     const dataSource = getDataSource();
-    const welcomRepository = dataSource.getRepository(Welcome);
+    const welcomeRepository = dataSource.getRepository(Welcome);
 
     // 1.1 Check if data already exists
-    const existingCount = await welcomRepository.count();
+    const existingCount = await welcomeRepository.count();
     if (existingCount > 0) {
-      logger.info(`Welcom table already contains ${existingCount} records, skipping seed`);
+      logger.info(`Welcome table already contains ${existingCount} records, skipping seed`);
       return;
     }
 
     // 2. Core processing
     // 2.1 Put data into the welcome entity
-    const welcomeEntities = defaultWelcomTitle.map(welcomData => {
+    const welcomeEntities = defaultWelcomeTitle.map(welcomeData => {
       const welcome = new Welcome();
-      welcome.title = welcomData.title;
+      welcome.title = welcomeData.title;
       return welcome;
     });
 
     // 2.2 Save buckets to database
-    await welcomRepository.save(welcomeEntities);
+    await welcomeRepository.save(welcomeEntities);
 
     // 3. Output handling
-    logger.info(`Successfully seeded welcom table with ${welcomeEntities.length} records`);
+    logger.info(`Successfully seeded welcome table with ${welcomeEntities.length} records`);
   } catch (error) {
     logger.error(`Error seeding bucket table: ${error instanceof Error ? error.message : String(error)}`);
     throw error;

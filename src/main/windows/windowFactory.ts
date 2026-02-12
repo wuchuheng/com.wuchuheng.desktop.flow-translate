@@ -201,6 +201,7 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
 
       width: 600,
       height: 400,
+      title: 'FlowTranslatePopup',
       webPreferences: {
         preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         contextIsolation: true,

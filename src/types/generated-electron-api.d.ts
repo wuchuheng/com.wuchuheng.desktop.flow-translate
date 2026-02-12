@@ -15,6 +15,7 @@ type IpcModules = {
   };
   system: {
     bootloading: typeof import('../main/ipc/system/bootloading.ipc').default;
+    getAppInfo: typeof import('../main/ipc/system/getAppInfo.ipc').default;
     getBootloadProgressing: typeof import('../main/ipc/system/getBootloadProgressing.ipc').default;
     reloadHotkeys: typeof import('../main/ipc/system/reloadHotkeys.ipc').default;
   };

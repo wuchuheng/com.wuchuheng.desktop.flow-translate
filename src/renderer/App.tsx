@@ -4,7 +4,7 @@ import { HashRouter } from 'react-router-dom';
 import { AppRoutes } from './config/Route';
 import './styles/global.css';
 import './i18n/i18n';
-import { MainLayout } from './layout/Maylayout';
+import { MainLayout } from './layout/MainLayout';
 
 // Wait for DOM to be ready before mounting React
 document.addEventListener('DOMContentLoaded', () => {

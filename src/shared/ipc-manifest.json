@@ -18,6 +18,10 @@
       "channel": "system:bootloading",
       "type": "event"
     },
+    "getAppInfo": {
+      "channel": "system:getAppInfo",
+      "type": "invoke"
+    },
     "getBootloadProgressing": {
       "channel": "system:getBootloadProgressing",
       "type": "invoke"

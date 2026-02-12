@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import packageJson from '../../../package.json';
 import { logger } from '../utils/logger';
-import { Welcome } from './entities/welcom';
+import { Welcome } from './entities/welcome.entity';
 import { Config } from './entities/config.entity';
 import { seedDatabase } from './seed';
 const databaseName = `${packageJson.name}-${packageJson.version}.sqlite`;
