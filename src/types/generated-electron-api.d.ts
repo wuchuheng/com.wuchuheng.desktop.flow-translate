@@ -8,9 +8,15 @@ type ToRendererMethod<T> = T extends { _isEvent: true }
   : (...args: Parameters<T>) => Awaitable<ReturnType<T>>;
 
 type IpcModules = {
+  config: {
+    get: typeof import('../main/ipc/config/get.ipc').default;
+    onThemeUpdate: typeof import('../main/ipc/config/onThemeUpdate.ipc').default;
+    save: typeof import('../main/ipc/config/save.ipc').default;
+  };
   system: {
     bootloading: typeof import('../main/ipc/system/bootloading.ipc').default;
     getBootloadProgressing: typeof import('../main/ipc/system/getBootloadProgressing.ipc').default;
+    reloadHotkeys: typeof import('../main/ipc/system/reloadHotkeys.ipc').default;
   };
   translation: {
     onTranslateChunk: typeof import('../main/ipc/translation/onTranslateChunk.ipc').default;

@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import packageJson from '../../../package.json';
 import { logger } from '../utils/logger';
 import { Welcome } from './entities/welcom';
+import { Config } from './entities/config.entity';
 import { seedDatabase } from './seed';
 const databaseName = `${packageJson.name}-${packageJson.version}.sqlite`;
 
@@ -19,7 +20,7 @@ export const initDB = async (): Promise<void> => {
     db = new DataSource({
       type: 'better-sqlite3',
       database: isDev ? 'dev.sqlite' : databaseName,
-      entities: [Welcome],
+      entities: [Welcome, Config],
       subscribers: [],
       synchronize: true,
       logging: isDev,

@@ -12,13 +12,13 @@ export const useAutoResize = (
 
     const observer = new ResizeObserver(() => {
       if (!ref.current) return;
-      
+
       // Use offsetHeight to include padding/borders
       let height = ref.current.scrollHeight;
-      
+
       // Add a tiny buffer for borders if needed, or rely on scrollHeight
       // If overflow is hidden, scrollHeight is the full content height.
-      
+
       // Clamp height
       if (height < minHeight) height = minHeight;
       if (height > maxHeight) height = maxHeight;
@@ -34,3 +34,4 @@ export const useAutoResize = (
     return () => observer.disconnect();
   }, [ref, width, minHeight, maxHeight]);
 };
+

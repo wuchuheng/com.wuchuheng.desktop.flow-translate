@@ -3,10 +3,12 @@ import * as dotenv from 'dotenv';
 import { setupAllIpcHandlers } from './ipc';
 import { createWindow, createFloatingWindow } from './windows/windowFactory';
 import { bootload } from './services/bootload.service';
-import { initDB } from './database/data-source';
+import { initDB, getDataSource } from './database/data-source';
 import { logger } from './utils/logger';
 import { capturePreviousWindow } from './utils/win-api-helper';
 import { onShow } from './ipc/window/onShow.ipc';
+import { Config } from './database/entities/config.entity';
+import { CONFIG_KEYS } from '../shared/constants';
 
 // Ensure UTF-8 encoding on Windows
 if (process.platform === 'win32') {
@@ -25,9 +27,48 @@ export let floatingWindow: BrowserWindow | null = null;
 
 export const getMainWindow = () => mainWindow;
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+/**
+ * Registers the global shortcut for toggling the floating window.
+ * Reads configuration from the database.
+ */
+export const registerGlobalShortcut = async () => {
+  try {
+    const repo = getDataSource().getRepository(Config);
+    const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.HOTKEYS });
+    const shortcut = (configEntity?.value as { toggleWindow?: string })?.toggleWindow || 'CommandOrControl+Alt+T';
+
+    globalShortcut.unregisterAll();
+    const success = globalShortcut.register(shortcut, () => {
+      if (floatingWindow) {
+        capturePreviousWindow();
+        const cursorPoint = screen.getCursorScreenPoint();
+        const display = screen.getDisplayNearestPoint(cursorPoint);
+        const windowBounds = floatingWindow.getBounds();
+        const x = Math.round(display.bounds.x + (display.bounds.width - windowBounds.width) / 2);
+        const bottomMargin = Math.round(display.bounds.height * 0.2);
+        const y = Math.round(display.bounds.y + display.bounds.height - windowBounds.height - bottomMargin);
+
+        floatingWindow.setPosition(x, y);
+        floatingWindow.show();
+        onShow();
+        setTimeout(() => {
+          if (floatingWindow && !floatingWindow.isDestroyed()) {
+            floatingWindow.focus();
+          }
+        }, 50);
+      }
+    });
+
+    if (success) {
+      logger.info(`Successfully registered shortcut: ${shortcut}`);
+    } else {
+      logger.error(`Failed to register shortcut: ${shortcut}`);
+    }
+  } catch (error) {
+    logger.error(`Error registering shortcut: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
 app.on('ready', async () => {
   try {
     // 2. Handle the logic.
@@ -40,54 +81,18 @@ app.on('ready', async () => {
     // 2.3 Setup all IPC handlers
     setupAllIpcHandlers();
 
-    // 2.4 Register global shortcut
-    globalShortcut.register('CommandOrControl+Alt+T', () => {
-      if (floatingWindow) {
-        // Capture the current window (Word, Chrome, etc.) BEFORE we take focus
-        capturePreviousWindow();
-
-        // Get the display where the cursor is currently located (Active Screen)
-        const cursorPoint = screen.getCursorScreenPoint();
-        const display = screen.getDisplayNearestPoint(cursorPoint);
-
-        // Calculate position
-        // Horizontal: Center of the active display
-        // Vertical: Fixed margin from bottom (20% of screen height)
-        const windowBounds = floatingWindow.getBounds();
-
-        const x = Math.round(display.bounds.x + (display.bounds.width - windowBounds.width) / 2);
-
-        // "Height from the bottom of the popup to the screen bottom must be fixed (20% height of current screen)"
-        const bottomMargin = Math.round(display.bounds.height * 0.2);
-        const y = Math.round(display.bounds.y + display.bounds.height - windowBounds.height - bottomMargin);
-
-        floatingWindow.setPosition(x, y);
-        floatingWindow.show();
-
-        // Notify renderer to reset state
-        onShow();
-
-        // Give focus with a slight delay to ensure it "sticks"
-        setTimeout(() => {
-          if (floatingWindow && !floatingWindow.isDestroyed()) {
-            floatingWindow.focus();
-          }
-        }, 50);
-      }
-    });
-
-    // 2.5 Bootload the application
+    // 2.4 Bootload the application
     bootload.register({ title: 'Initializing Database ...', load: initDB });
     await bootload.boot();
+
+    // 2.5 Register global shortcut after DB is ready
+    await registerGlobalShortcut();
   } catch (error) {
     logger.error(`Startup failed: ${error instanceof Error ? error.message : String(error)}`);
     app.quit();
   }
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -95,8 +100,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
       .then(window => {

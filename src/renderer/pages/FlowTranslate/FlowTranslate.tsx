@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Key } from '../../components/Key';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useShortcuts } from '../../hooks/useShortcuts';
 import { useAutoResize } from '../../hooks/useAutoResize';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import { hexToRgba } from '../../../shared/utils';
 
 export const FlowTranslate: React.FC = () => {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  const isDarkMode = useTheme();
+
+  const { theme, isDarkMode } = useAppTheme();
   const { translation, isTranslating, hasError, startTranslation, resetTranslation } = useTranslation();
 
-  useAutoResize(containerRef, { 
+  useAutoResize(containerRef, {
     minHeight: 100, // Input + Footer approx
-    maxHeight: 600  // Max expansion
+    maxHeight: 600, // Max expansion
   });
 
   const submitTranslation = () => {
@@ -25,10 +26,7 @@ export const FlowTranslate: React.FC = () => {
     }
   };
 
-  const { handleKeyDown, resetSpaceTimes } = useShortcuts(
-    submitTranslation, 
-    () => window.electron.window.hide()
-  );
+  const { handleKeyDown, resetSpaceTimes } = useShortcuts(submitTranslation, () => window.electron.window.hide());
 
   useEffect(() => {
     // Initial focus
@@ -65,8 +63,15 @@ export const FlowTranslate: React.FC = () => {
     setInput(e.target.value);
   };
 
+  const dynamicBgStyle = {
+    backgroundColor: hexToRgba(theme.backgroundColor, theme.opacity),
+  };
+
   return (
-    <div ref={containerRef} className={`font-sans w-full max-h-screen overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
+    <div
+      ref={containerRef}
+      className={`font-sans w-full max-h-screen overflow-hidden ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
+    >
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
@@ -88,12 +93,15 @@ export const FlowTranslate: React.FC = () => {
           background-color: rgba(255, 255, 255, 0.2);
         }
       `}</style>
-      <div className="h-full w-full flex flex-col overflow-hidden rounded-2xl backdrop-blur-2xl border bg-white/80 border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] dark:bg-[#1e1e2e]/90 dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]">
+      <div
+        className="h-full w-full flex flex-col overflow-hidden rounded-2xl backdrop-blur-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
+        style={dynamicBgStyle}
+      >
         <div className="flex-1 flex flex-col overflow-hidden relative min-h-0">
           {!isTranslating && !translation && (
             <textarea
               ref={textareaRef}
-              className="w-full min-h-[60px] max-h-full [field-sizing:content] bg-transparent text-lg font-medium leading-relaxed p-4 border-none focus:ring-0 resize-none outline-none overflow-y-auto custom-scrollbar text-gray-900 placeholder-gray-400 dark:text-white dark:placeholder-white/20"
+              className="w-full min-h-[60px] max-h-full [field-sizing:content] bg-transparent text-lg font-medium leading-relaxed p-4 border-none focus:ring-0 resize-none outline-none overflow-y-auto custom-scrollbar text-inherit placeholder-gray-400 dark:placeholder-white/20"
               placeholder="Ask Flow..."
               value={input}
               onChange={handleInputChange}
@@ -109,7 +117,7 @@ export const FlowTranslate: React.FC = () => {
               >
                 {hasError ? 'Error' : 'Translation'}
               </div>
-              <div className="text-lg leading-relaxed font-light text-gray-800 dark:text-[#cdd6f4]">
+              <div className="text-lg leading-relaxed font-light text-inherit">
                 {translation || 'Thinking...'}
                 {isTranslating && (
                   <span className="ml-1 inline-block h-5 w-1.5 animate-pulse rounded-full align-middle bg-blue-500 dark:bg-blue-400" />

@@ -96,6 +96,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
         preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         contextIsolation: true,
         nodeIntegration: false,
+        webSecurity: false,
       },
       // Use frameless window for custom title bar
       frame: false,
@@ -204,6 +205,7 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
         preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         contextIsolation: true,
         nodeIntegration: false,
+        webSecurity: false,
       },
       // Use frameless window for custom title bar
       frame: false,

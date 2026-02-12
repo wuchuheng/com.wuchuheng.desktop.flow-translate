@@ -1,4 +1,18 @@
 {
+  "config": {
+    "get": {
+      "channel": "config:get",
+      "type": "invoke"
+    },
+    "onThemeUpdate": {
+      "channel": "config:onThemeUpdate",
+      "type": "event"
+    },
+    "save": {
+      "channel": "config:save",
+      "type": "invoke"
+    }
+  },
   "system": {
     "bootloading": {
       "channel": "system:bootloading",
@@ -6,6 +20,10 @@
     },
     "getBootloadProgressing": {
       "channel": "system:getBootloadProgressing",
+      "type": "invoke"
+    },
+    "reloadHotkeys": {
+      "channel": "system:reloadHotkeys",
       "type": "invoke"
     }
   },

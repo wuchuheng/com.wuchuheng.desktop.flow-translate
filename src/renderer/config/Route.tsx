@@ -1,13 +1,12 @@
-import { Route, Routes } from 'react-router-dom';
-import { Home } from '../pages/Home/Home';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import React from 'react';
-import { About } from '../pages/About/About';
 import { FlowTranslate } from '../pages/FlowTranslate/FlowTranslate';
+import { SettingsPage } from '../pages/Settings/SettingsPage';
 
 export const AppRoutes: React.FC = () => (
   <Routes>
-    <Route path="/" element={<Home />} />
-    <Route path="/about" element={<About />} />
+    <Route path="/" element={<Navigate to="/settings" replace />} />
+    <Route path="/settings" element={<SettingsPage />} />
     <Route path="/flow-translate" element={<FlowTranslate />} />
   </Routes>
 );
