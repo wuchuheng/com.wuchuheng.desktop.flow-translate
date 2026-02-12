@@ -3,7 +3,7 @@ import { logger } from '../utils/logger';
 import { EventHandler, registerEvent } from '../utils/ipc-helper';
 
 type IpcModule = {
-  default: ((...args: any[]) => any) & Partial<EventHandler>;
+  default: ((...args: unknown[]) => unknown) & Partial<EventHandler>;
 };
 
 const IPC_FILE_PATTERN = /\.ipc\.ts$/;

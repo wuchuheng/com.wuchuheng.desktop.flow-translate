@@ -15,6 +15,10 @@ export const mainConfig: Configuration = {
     rules,
   },
   plugins,
+  externals: {
+    'better-sqlite3': 'commonjs better-sqlite3',
+    typeorm: 'commonjs typeorm',
+  },
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
     alias: {

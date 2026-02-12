@@ -185,3 +185,50 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     throw error;
   }
 };
+
+export const createFloatingWindow = async (): Promise<BrowserWindow> => {
+  logger.info('Creating floating window');
+
+  try {
+    const floatingWindow = new BrowserWindow({
+      alwaysOnTop: true,
+      transparent: true,
+
+      resizable: false,
+      skipTaskbar: true,
+      show: false,
+
+      width: 600,
+      height: 400,
+      webPreferences: {
+        preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+      // Use frameless window for custom title bar
+      frame: false,
+      // No need for autoHideMenuBar with frameless window
+      // autoHideMenuBar: true,
+      titleBarStyle: 'hidden',
+    });
+
+    floatingWindow.loadURL(`${MAIN_WINDOW_WEBPACK_ENTRY}#/flow-translate`);
+
+    floatingWindow.on('blur', () => {
+      floatingWindow.hide();
+    });
+
+    // Enable debugging for the floating window
+    if (process.env.NODE_ENV === 'development') {
+      floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+
+    // Remove the title bar and menu for the floating window
+    floatingWindow.setMenu(null);
+
+    return floatingWindow;
+  } catch (error) {
+    logger.error(`Error creating floating window: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
+  }
+};

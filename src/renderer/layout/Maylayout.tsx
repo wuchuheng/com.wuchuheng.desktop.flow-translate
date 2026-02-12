@@ -1,24 +1,25 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, createContext } from 'react';
 import TitleBar from './TitleBar';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme , message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Bootloading } from './Bootloading';
 import { MessageInstance } from 'antd/es/message/interface';
-import { message } from 'antd';
-import useMessage from 'antd/es/message/useMessage';
 
-export const MessageContext = React.createContext<MessageInstance | undefined>(undefined);
+import { useLocation } from 'react-router-dom';
+
+export const MessageContext = createContext<MessageInstance | undefined>(undefined);
 
 type MainLayoutProps = {
   children: React.ReactNode;
 };
 export const MainLayout: React.FC<MainLayoutProps> = props => {
-  const [isDarkTheme, setIsDarkTheme] = React.useState<boolean>(false);
+  const location = useLocation();
+  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
 
   const [messageApi, contextHolder] = message.useMessage();
 
   // Initialize theme on component mount - default to light theme
-  React.useEffect(() => {
+  useEffect(() => {
     // Remove any existing dark class to ensure light theme is default
     document.documentElement.classList.remove('dark');
     setIsDarkTheme(false);
@@ -38,6 +39,19 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
     i18n.changeLanguage(newLang);
   }, [i18n]);
 
+  const isFlowTranslate = location.pathname.includes('/flow-translate');
+  const MainLayoutWindows: React.FC = () =>
+    isFlowTranslate ? (
+      <>{props.children}</>
+    ) : (
+      <div className={`flex h-[100vh] flex-col ${isFlowTranslate ? 'bg-transparent' : 'bg-background-primary'}`}>
+        <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
+        <main className={`flex-1 ${isFlowTranslate ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          <Bootloading>{props.children}</Bootloading>
+        </main>
+      </div>
+    );
+
   return (
     <ConfigProvider
       theme={{
@@ -50,12 +64,7 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
     >
       {contextHolder}
       <MessageContext.Provider value={messageApi}>
-        <div className="flex h-[100vh] flex-col bg-background-primary">
-          <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
-          <main className="flex-1 overflow-y-auto">
-            <Bootloading>{props.children}</Bootloading>
-          </main>
-        </div>
+        <MainLayoutWindows />
       </MessageContext.Provider>
     </ConfigProvider>
   );

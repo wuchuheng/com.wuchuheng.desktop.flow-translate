@@ -12,17 +12,20 @@ type IpcModules = {
     bootloading: typeof import('../main/ipc/system/bootloading.ipc').default;
     getBootloadProgressing: typeof import('../main/ipc/system/getBootloadProgressing.ipc').default;
   };
-  tmp: {
-    getTmp: typeof import('../main/ipc/tmp/getTmp.ipc').default;
-    getTmp2: typeof import('../main/ipc/tmp/getTmp2.ipc').default;
+  translation: {
+    onTranslateChunk: typeof import('../main/ipc/translation/onTranslateChunk.ipc').default;
+    startTranslation: typeof import('../main/ipc/translation/startTranslation.ipc').default;
   };
   welcome: {
     getWelcome: typeof import('../main/ipc/welcome/getWelcome.ipc').default;
   };
   window: {
     close: typeof import('../main/ipc/window/close.ipc').default;
+    hide: typeof import('../main/ipc/window/hide.ipc').default;
     maximize: typeof import('../main/ipc/window/maximize.ipc').default;
     minimize: typeof import('../main/ipc/window/minimize.ipc').default;
+    onShow: typeof import('../main/ipc/window/onShow.ipc').default;
+    resize: typeof import('../main/ipc/window/resize.ipc').default;
   };
 };
 

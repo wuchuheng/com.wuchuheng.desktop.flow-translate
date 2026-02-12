@@ -1,6 +1,6 @@
 import { ipcMain, WebContents } from 'electron';
 
-export type EventHandler<T = any> = ((payload: T) => void) & {
+export type EventHandler<T = unknown> = ((payload: T) => void) & {
   _isEvent: true;
   _setDispatcher?: (dispatch: (payload: T) => void) => void;
 };

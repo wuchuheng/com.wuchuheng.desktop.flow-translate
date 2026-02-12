@@ -1,7 +1,7 @@
-import { ConfigProvider, theme } from 'antd';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { RouteRender } from './config/Route';
+import { HashRouter } from 'react-router-dom';
+import { AppRoutes } from './config/Route';
 import './styles/global.css';
 import './i18n/i18n';
 import { MainLayout } from './layout/Maylayout';
@@ -12,9 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   root.render(
     <React.StrictMode>
-      <MainLayout>
-        <RouteRender />
-      </MainLayout>
+      <HashRouter>
+        <MainLayout>
+          <AppRoutes />
+        </MainLayout>
+      </HashRouter>
     </React.StrictMode>
   );
 });

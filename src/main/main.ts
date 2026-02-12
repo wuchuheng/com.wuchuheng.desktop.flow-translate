@@ -1,9 +1,19 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, globalShortcut, screen } from 'electron';
+import * as dotenv from 'dotenv';
 import { setupAllIpcHandlers } from './ipc';
-import { createWindow } from './windows/windowFactory';
+import { createWindow, createFloatingWindow } from './windows/windowFactory';
 import { bootload } from './services/bootload.service';
 import { initDB } from './database/data-source';
 import { logger } from './utils/logger';
+import { capturePreviousWindow } from './utils/win-api-helper';
+import { onShow } from './ipc/window/onShow.ipc';
+
+// Ensure UTF-8 encoding on Windows
+if (process.platform === 'win32') {
+  process.env.LANG = 'en_US.UTF-8';
+}
+
+dotenv.config();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -11,6 +21,7 @@ if (require('electron-squirrel-startup')) {
 }
 
 let mainWindow: BrowserWindow | null = null;
+export let floatingWindow: BrowserWindow | null = null;
 
 export const getMainWindow = () => mainWindow;
 
@@ -23,10 +34,49 @@ app.on('ready', async () => {
     // 2.1 Create the main window.
     mainWindow = await createWindow();
 
-    // 2.2 Setup all IPC handlers
+    // 2.2 Create floating window (hidden by default)
+    floatingWindow = await createFloatingWindow();
+
+    // 2.3 Setup all IPC handlers
     setupAllIpcHandlers();
 
-    // 2.3 Bootload the application
+    // 2.4 Register global shortcut
+    globalShortcut.register('CommandOrControl+Alt+T', () => {
+      if (floatingWindow) {
+        // Capture the current window (Word, Chrome, etc.) BEFORE we take focus
+        capturePreviousWindow();
+
+        // Get the display where the cursor is currently located (Active Screen)
+        const cursorPoint = screen.getCursorScreenPoint();
+        const display = screen.getDisplayNearestPoint(cursorPoint);
+
+        // Calculate position
+        // Horizontal: Center of the active display
+        // Vertical: Fixed margin from bottom (20% of screen height)
+        const windowBounds = floatingWindow.getBounds();
+
+        const x = Math.round(display.bounds.x + (display.bounds.width - windowBounds.width) / 2);
+
+        // "Height from the bottom of the popup to the screen bottom must be fixed (20% height of current screen)"
+        const bottomMargin = Math.round(display.bounds.height * 0.2);
+        const y = Math.round(display.bounds.y + display.bounds.height - windowBounds.height - bottomMargin);
+
+        floatingWindow.setPosition(x, y);
+        floatingWindow.show();
+
+        // Notify renderer to reset state
+        onShow();
+
+        // Give focus with a slight delay to ensure it "sticks"
+        setTimeout(() => {
+          if (floatingWindow && !floatingWindow.isDestroyed()) {
+            floatingWindow.focus();
+          }
+        }, 50);
+      }
+    });
+
+    // 2.5 Bootload the application
     bootload.register({ title: 'Initializing Database ...', load: initDB });
     await bootload.boot();
   } catch (error) {

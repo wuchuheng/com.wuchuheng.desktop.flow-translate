@@ -9,13 +9,13 @@
       "type": "invoke"
     }
   },
-  "tmp": {
-    "getTmp": {
-      "channel": "tmp:getTmp",
-      "type": "invoke"
+  "translation": {
+    "onTranslateChunk": {
+      "channel": "translation:onTranslateChunk",
+      "type": "event"
     },
-    "getTmp2": {
-      "channel": "tmp:getTmp2",
+    "startTranslation": {
+      "channel": "translation:startTranslation",
       "type": "invoke"
     }
   },
@@ -30,12 +30,24 @@
       "channel": "window:close",
       "type": "invoke"
     },
+    "hide": {
+      "channel": "window:hide",
+      "type": "invoke"
+    },
     "maximize": {
       "channel": "window:maximize",
       "type": "invoke"
     },
     "minimize": {
       "channel": "window:minimize",
+      "type": "invoke"
+    },
+    "onShow": {
+      "channel": "window:onShow",
+      "type": "event"
+    },
+    "resize": {
+      "channel": "window:resize",
       "type": "invoke"
     }
   }

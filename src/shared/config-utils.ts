@@ -10,6 +10,7 @@ type ElectronApi = Window['electron'];
 /**
  * Helper type to extract the parameter type from a function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FirstParameter<T> = T extends (param: infer P) => any ? P : never;
 
 /**
@@ -17,9 +18,11 @@ type FirstParameter<T> = T extends (param: infer P) => any ? P : never;
  */
 type MapMethodToChannel<T> =
   // If it's a function that returns a Promise
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends (...args: any[]) => Promise<infer R>
     ? IpcChannel<FirstParameter<T>, R>
     : // If it's a function that takes a callback
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       T extends (callback: (data: infer D) => void) => any
       ? SubscriptionChannel<D>
       : // Fallback - should not happen with well-typed Window["electron"]
@@ -41,8 +44,10 @@ export type StrictConfig = {
  * @param config The source configuration object
  * @returns A new object with the same structure but each leaf value replaced with its .request property
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createPreloadConfig<T extends Record<string, any>>(config: T): any {
   // Helper function to recursively process each level
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function processValue(value: any): any {
     // If it's not an object or is null, return it as is
     if (value === null || typeof value !== 'object') {
@@ -55,6 +60,7 @@ export function createPreloadConfig<T extends Record<string, any>>(config: T): a
     }
 
     // Otherwise it's a branch node, process its children
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: Record<string, any> = {};
     for (const key in value) {
       if (Object.prototype.hasOwnProperty.call(value, key)) {
