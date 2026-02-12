@@ -1,5 +1,6 @@
 import { BrowserWindow, dialog } from 'electron';
 import net from 'node:net';
+import * as path from 'path';
 import { logger } from '../utils/logger';
 import { getDataSource } from '../database/data-source';
 import { Config } from '../database/entities/config.entity';
@@ -100,6 +101,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     const mainWindow = new BrowserWindow({
       height: 800 * 1.5,
       width: 1200 * 1.5,
+      icon: path.join(__dirname, 'icon.ico'),
       webPreferences: {
         preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         contextIsolation: true,
@@ -218,6 +220,7 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
     const floatingWindow = new BrowserWindow({
       alwaysOnTop: true,
       transparent: true,
+      icon: path.join(__dirname, 'icon.ico'),
 
       resizable: false,
       skipTaskbar: true,
