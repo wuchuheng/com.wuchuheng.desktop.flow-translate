@@ -41,6 +41,24 @@
       "type": "invoke"
     }
   },
+  "update": {
+    "check": {
+      "channel": "update:check",
+      "type": "invoke"
+    },
+    "download": {
+      "channel": "update:download",
+      "type": "invoke"
+    },
+    "install": {
+      "channel": "update:install",
+      "type": "invoke"
+    },
+    "onStatusChange": {
+      "channel": "update:onStatusChange",
+      "type": "event"
+    }
+  },
   "welcome": {
     "getWelcome": {
       "channel": "welcome:getWelcome",

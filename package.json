@@ -1,7 +1,7 @@
 {
   "name": "flow-translate",
   "productName": "Flow Translate",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "AI-powered minimalist translation tool",
   "main": ".webpack/main",
   "scripts": {
@@ -26,6 +26,14 @@
     "email": "root@wuchuheng.com"
   },
   "license": "MIT",
+  "build": {
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "http://localhost:6003/apps/2/staticFiles/"
+      }
+    ]
+  },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.1",
     "@electron-forge/maker-deb": "^7.8.1",
@@ -37,6 +45,7 @@
     "@electron-forge/plugin-webpack": "^7.8.1",
     "@electron/fuses": "^1.8.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
@@ -70,6 +79,7 @@
     "chalk": "^5.4.1",
     "dayjs": "^1.11.13",
     "electron-squirrel-startup": "^1.0.1",
+    "electron-updater": "^6.7.3",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.1.0",
     "openai": "^6.21.0",

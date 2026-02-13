@@ -17,7 +17,18 @@ const iconDir = path.join(__dirname, 'src/renderer/assets/genLogo');
 const config: ForgeConfig = {
   packagerConfig: {
     icon: path.join(iconDir, 'icon'),
-    asar: true,
+    asar: {
+      // 关键点：强制将原生模块从 ASAR 中解包出来
+      unpack: '**/node_modules/better-sqlite3/**/*',
+    },
+    // 确保打包时不忽略 node_modules 中的 better-sqlite3
+    ignore: (file: string) => {
+      if (!file) return false;
+      // 不要忽略 better-sqlite3
+      if (file.includes('node_modules/better-sqlite3')) return false;
+      // 但 Webpack 插件默认会忽略所有 node_modules，所以我们需要在这里小心处理
+      return false;
+    }
   },
   rebuildConfig: {},
   makers: [
@@ -46,8 +57,6 @@ const config: ForgeConfig = {
         ],
       },
     }),
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,

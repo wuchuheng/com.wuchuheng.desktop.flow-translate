@@ -23,6 +23,12 @@ type IpcModules = {
     onTranslateChunk: typeof import('../main/ipc/translation/onTranslateChunk.ipc').default;
     startTranslation: typeof import('../main/ipc/translation/startTranslation.ipc').default;
   };
+  update: {
+    check: typeof import('../main/ipc/update/check.ipc').default;
+    download: typeof import('../main/ipc/update/download.ipc').default;
+    install: typeof import('../main/ipc/update/install.ipc').default;
+    onStatusChange: typeof import('../main/ipc/update/onStatusChange.ipc').default;
+  };
   welcome: {
     getWelcome: typeof import('../main/ipc/welcome/getWelcome.ipc').default;
   };

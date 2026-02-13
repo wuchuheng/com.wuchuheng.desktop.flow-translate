@@ -10,6 +10,7 @@ import { onShow } from './ipc/window/onShow.ipc';
 import { Config } from './database/entities/config.entity';
 import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '../shared/constants';
 import { createTray } from './utils/tray-helper';
+import { UpdateService } from './services/update.service';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -90,11 +91,14 @@ app.on('ready', async () => {
     // 2.3 Setup all IPC handlers
     setupAllIpcHandlers();
 
-    // 2.4 Bootload the application
+    // 2.4 Initialize Update Service
+    UpdateService.getInstance().setMainWindow(mainWindow);
+
+    // 2.5 Bootload the application
     bootload.register({ title: 'Initializing Database ...', load: initDB });
     await bootload.boot();
 
-    // 2.5 Register global shortcut after DB is ready
+    // 2.6 Register global shortcut after DB is ready
     await registerGlobalShortcut();
   } catch (error) {
     logger.error(`Startup failed: ${error instanceof Error ? error.message : String(error)}`);

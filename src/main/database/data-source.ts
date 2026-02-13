@@ -4,6 +4,11 @@ import { logger } from '../utils/logger';
 import { Welcome } from './entities/welcome.entity';
 import { Config } from './entities/config.entity';
 import { seedDatabase } from './seed';
+
+// 使用 require 确保获取的是构造函数，避免 Webpack 的 ESM 转换问题
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sqlite3 = require('better-sqlite3');
+
 const databaseName = `${packageJson.name}-${packageJson.version}.sqlite`;
 
 let db: DataSource;
@@ -19,6 +24,8 @@ export const initDB = async (): Promise<void> => {
 
     db = new DataSource({
       type: 'better-sqlite3',
+      // @ts-ignore - TypeORM types sometimes conflict with raw driver injection
+      driver: sqlite3, 
       database: isDev ? 'dev.sqlite' : databaseName,
       entities: [Welcome, Config],
       subscribers: [],
@@ -31,7 +38,6 @@ export const initDB = async (): Promise<void> => {
     isInitialized = true;
     logger.info(`Database connection established to ${isDev ? 'dev.sqlite' : databaseName}`);
 
-    // Seed the database after initialization
     await seedDatabase();
   } catch (error) {
     logger.error(`Database initialization error: ${error instanceof Error ? error.message : String(error)}`);

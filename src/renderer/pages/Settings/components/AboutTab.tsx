@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Space, Divider, Spin } from 'antd';
-import { GithubOutlined, GlobalOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Typography, Space, Divider, Spin, Button, Progress, message } from 'antd';
+import { GithubOutlined, GlobalOutlined, InfoCircleOutlined, CloudDownloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 const { Title, Text, Paragraph } = Typography;
@@ -17,13 +17,44 @@ export const AboutTab: React.FC = () => {
   const { t } = useTranslation();
   const [info, setInfo] = useState<AppInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updateStatus, setUpdateStatus] = useState<string>('idle');
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
   useEffect(() => {
     window.electron.system.getAppInfo().then(res => {
       setInfo(res);
       setLoading(false);
     });
+
+    const unsubscribe = window.electron.update.onStatusChange((status: any) => {
+      setUpdateStatus(status.channel);
+      if (status.channel === 'download-progress') {
+        setDownloadProgress(Math.floor(status.data.percent));
+      } else if (status.channel === 'update-error') {
+        message.error('Update failed: ' + (status.data?.message || 'Unknown error'));
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  const handleCheckUpdate = async () => {
+    setUpdateStatus('checking-for-update');
+    try {
+      await window.electron.update.check();
+    } catch (err) {
+      setUpdateStatus('idle');
+      message.error('Failed to check for updates');
+    }
+  };
+
+  const handleDownload = () => {
+    window.electron.update.download();
+  };
+
+  const handleInstall = () => {
+    window.electron.update.install();
+  };
 
   if (loading) {
     return (
@@ -47,9 +78,51 @@ export const AboutTab: React.FC = () => {
         {info?.name}
       </Title>
       
-      <Text type="secondary" className="mb-6 block font-mono">
+      <Text type="secondary" className="mb-2 block font-mono">
         v{info?.version}
       </Text>
+
+      <div className="mb-6 flex flex-col items-center gap-3">
+        {updateStatus === 'idle' || updateStatus === 'update-not-available' ? (
+          <Button 
+            type="primary" 
+            ghost 
+            size="small" 
+            onClick={handleCheckUpdate}
+            className="rounded-full"
+          >
+            {updateStatus === 'update-not-available' ? 'Already up to date' : 'Check for Updates'}
+          </Button>
+        ) : updateStatus === 'checking-for-update' ? (
+          <Space>
+            <Spin size="small" />
+            <Text type="secondary" className="text-xs">Checking...</Text>
+          </Space>
+        ) : updateStatus === 'update-available' ? (
+          <Button 
+            type="primary" 
+            icon={<CloudDownloadOutlined />} 
+            onClick={handleDownload}
+            className="rounded-full"
+          >
+            Download Update
+          </Button>
+        ) : updateStatus === 'download-progress' ? (
+          <div className="w-48">
+            <Progress percent={downloadProgress} size="small" status="active" />
+            <Text className="text-xs" type="secondary">Downloading...</Text>
+          </div>
+        ) : updateStatus === 'update-downloaded' ? (
+          <Button 
+            type="primary" 
+            icon={<CheckCircleOutlined />} 
+            onClick={handleInstall}
+            className="bg-green-500 hover:bg-green-600 rounded-full"
+          >
+            Restart & Install
+          </Button>
+        ) : null}
+      </div>
 
       <Paragraph className="max-w-md text-base leading-relaxed text-gray-600 dark:text-gray-400">
         {info?.description || t('about.version.description')}
@@ -90,11 +163,6 @@ export const AboutTab: React.FC = () => {
         >
           <GlobalOutlined /> {t('about.contact.support')}
         </a>
-      </div>
-
-      <div className="mt-12 flex items-center gap-2 text-xs text-gray-400">
-        <InfoCircleOutlined />
-        <span>{t('about.subtitle')}</span>
       </div>
     </div>
   );
