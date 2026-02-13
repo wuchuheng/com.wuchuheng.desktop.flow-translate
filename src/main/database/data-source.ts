@@ -5,7 +5,7 @@ import { Welcome } from './entities/welcome.entity';
 import { Config } from './entities/config.entity';
 import { seedDatabase } from './seed';
 
-// 使用 require 确保获取的是构造函数，避免 Webpack 的 ESM 转换问题
+// Use require to ensure we get the constructor, avoiding ESM interop issues with Webpack
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sqlite3 = require('better-sqlite3');
 
@@ -25,7 +25,7 @@ export const initDB = async (): Promise<void> => {
     db = new DataSource({
       type: 'better-sqlite3',
       // @ts-ignore - TypeORM types sometimes conflict with raw driver injection
-      driver: sqlite3, 
+      driver: sqlite3, // Explicitly inject the driver
       database: isDev ? 'dev.sqlite' : databaseName,
       entities: [Welcome, Config],
       subscribers: [],

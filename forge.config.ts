@@ -18,17 +18,14 @@ const config: ForgeConfig = {
   packagerConfig: {
     icon: path.join(iconDir, 'icon'),
     asar: {
-      // 关键点：强制将原生模块从 ASAR 中解包出来
+      // Force unpacking the native module from ASAR to ensure it can be loaded correctly
       unpack: '**/node_modules/better-sqlite3/**/*',
     },
-    // 确保打包时不忽略 node_modules 中的 better-sqlite3
-    ignore: (file: string) => {
-      if (!file) return false;
-      // 不要忽略 better-sqlite3
-      if (file.includes('node_modules/better-sqlite3')) return false;
-      // 但 Webpack 插件默认会忽略所有 node_modules，所以我们需要在这里小心处理
-      return false;
-    }
+    // Optimized ignore logic: Keep only the bundle and necessary runtime modules
+    ignore: [
+      /^\/(?!\.webpack|node_modules|package\.json)/,
+      /^\/node_modules\/(?!better-sqlite3|bindings|file-uri-to-path|electron-squirrel-startup)/,
+    ],
   },
   rebuildConfig: {},
   makers: [

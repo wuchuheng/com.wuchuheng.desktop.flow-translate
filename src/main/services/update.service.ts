@@ -23,7 +23,7 @@ export class UpdateService {
   }
 
   private setupListeners() {
-    autoUpdater.autoDownload = false;
+    autoUpdater.autoDownload = false; // Manual trigger for better UX
     autoUpdater.logger = logger;
 
     autoUpdater.on('checking-for-update', () => {
