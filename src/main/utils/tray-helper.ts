@@ -9,7 +9,10 @@ declare global {
   var isForceQuitting: boolean | undefined;
 }
 
-export const createTray = (getMainWindow: () => BrowserWindow | null) => {
+export const createTray = (
+  getMainWindow: () => BrowserWindow | null,
+  recreateMainWindow: () => Promise<BrowserWindow | null>
+) => {
   if (tray) return tray;
 
   try {
@@ -26,11 +29,13 @@ export const createTray = (getMainWindow: () => BrowserWindow | null) => {
     const contextMenu = Menu.buildFromTemplate([
       {
         label: 'Show App',
-        click: () => {
+        click: async () => {
           const mainWindow = getMainWindow();
-          if (mainWindow) {
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.show();
             mainWindow.focus();
+          } else {
+            await recreateMainWindow();
           }
         }
       },
@@ -48,15 +53,17 @@ export const createTray = (getMainWindow: () => BrowserWindow | null) => {
     tray.setToolTip('Flow Translate');
     tray.setContextMenu(contextMenu);
 
-    tray.on('click', () => {
+    tray.on('click', async () => {
       const mainWindow = getMainWindow();
-      if (mainWindow) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
         if (mainWindow.isVisible()) {
           mainWindow.hide();
         } else {
           mainWindow.show();
           mainWindow.focus();
         }
+      } else {
+        await recreateMainWindow();
       }
     });
 

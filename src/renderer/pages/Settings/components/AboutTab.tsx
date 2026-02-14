@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Space, Divider, Spin, Button, Progress, message } from 'antd';
-import { GithubOutlined, GlobalOutlined, InfoCircleOutlined, CloudDownloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { GithubOutlined, GlobalOutlined, CheckCircleOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 const { Title, Text, Paragraph } = Typography;
@@ -26,12 +26,14 @@ export const AboutTab: React.FC = () => {
       setLoading(false);
     });
 
-    const unsubscribe = window.electron.update.onStatusChange((status: any) => {
+    const unsubscribe = window.electron.update.onStatusChange((status: { channel: string; data?: any }) => {
       setUpdateStatus(status.channel);
-      if (status.channel === 'download-progress') {
+      if (status.channel === 'download-progress' && status.data) {
         setDownloadProgress(Math.floor(status.data.percent));
       } else if (status.channel === 'update-error') {
-        message.error('Update failed: ' + (status.data?.message || 'Unknown error'));
+        const data = status.data as { message?: string };
+        message.error('Update failed: ' + (data?.message || 'Unknown error'));
+        setUpdateStatus('idle');
       }
     });
 
@@ -83,15 +85,18 @@ export const AboutTab: React.FC = () => {
       </Text>
 
       <div className="mb-6 flex flex-col items-center gap-3">
-        {updateStatus === 'idle' || updateStatus === 'update-not-available' ? (
+        {(updateStatus === 'idle' || updateStatus === 'update-not-available') ? (
           <Button 
             type="primary" 
             ghost 
             size="small" 
             onClick={handleCheckUpdate}
             className="rounded-full"
+            disabled={updateStatus === 'update-not-available'}
           >
-            {updateStatus === 'update-not-available' ? 'Already up to date' : 'Check for Updates'}
+            {updateStatus === 'update-not-available' ? (
+              <Space><CheckCircleOutlined /> Already up to date</Space>
+            ) : 'Check for Updates'}
           </Button>
         ) : updateStatus === 'checking-for-update' ? (
           <Space>
@@ -117,7 +122,7 @@ export const AboutTab: React.FC = () => {
             type="primary" 
             icon={<CheckCircleOutlined />} 
             onClick={handleInstall}
-            className="bg-green-500 hover:bg-green-600 rounded-full"
+            className="bg-green-500 hover:bg-green-600 rounded-full border-none"
           >
             Restart & Install
           </Button>

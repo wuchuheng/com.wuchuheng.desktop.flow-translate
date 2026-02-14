@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, Select, Switch, Button, AutoComplete, Spin, message, Tooltip } from 'antd';
 import { InfoCircleOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Stream } from 'openai/streaming';
@@ -35,7 +35,7 @@ export const AiSettingsTab: React.FC = () => {
   const [testInput, setTestInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isTesting, setIsTesting] = useState(false);
-  const chatEndRef = React.useRef<HTMLDivElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!configLoading) {

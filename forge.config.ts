@@ -21,6 +21,9 @@ const config: ForgeConfig = {
       // Force unpacking the native module from ASAR to ensure it can be loaded correctly
       unpack: '**/node_modules/better-sqlite3/**/*',
     },
+    extraResource: [
+      path.join(__dirname, 'src/main/app-update.yml'),
+    ],
     // Optimized ignore logic: Keep only the bundle and necessary runtime modules
     ignore: [
       /^\/(?!\.webpack|node_modules|package\.json)/,
@@ -29,7 +32,9 @@ const config: ForgeConfig = {
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({ setupIcon: path.join(iconDir, 'icon.ico') }),
+    new MakerSquirrel({
+      setupIcon: path.join(iconDir, 'icon.ico'),
+    }),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({ options: { icon: path.join(iconDir, 'icon.png') } }),
     new MakerDeb({ options: { icon: path.join(iconDir, 'icon.png') } }),

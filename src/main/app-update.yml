@@ -1,0 +1,4 @@
+provider: generic
+url: http://localhost:6003/apps/29/staticFiles
+# Note: The actual URL is dynamically set in UpdateService.ts using setFeedURL.
+# This file is required by electron-updater to initialize correctly in production.

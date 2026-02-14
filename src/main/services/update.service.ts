@@ -1,13 +1,14 @@
 import { autoUpdater, UpdateInfo } from 'electron-updater';
 import { logger } from '../utils/logger';
-import { BrowserWindow } from 'electron';
-import { onStatusChange } from '../ipc/update/onStatusChange.ipc';
+import { BrowserWindow, app } from 'electron';
+import { onStatusChange, UpdateStatus } from '../ipc/update/onStatusChange.ipc';
 
 export class UpdateService {
   private static instance: UpdateService;
   private mainWindow: BrowserWindow | null = null;
 
   private constructor() {
+    this.init();
     this.setupListeners();
   }
 
@@ -22,36 +23,57 @@ export class UpdateService {
     this.mainWindow = window;
   }
 
-  private setupListeners() {
-    autoUpdater.autoDownload = false; // Manual trigger for better UX
-    autoUpdater.logger = logger;
+  private getUpdateUrl(): string {
+    const isDev = !app.isPackaged;
+    const defaultBaseUrl = 'http://localhost:6003/apps/29/staticFiles';
 
+    const baseUrl = isDev
+      ? process.env.DEV_UPDATE_SERVER_URL || defaultBaseUrl
+      : process.env.PROD_UPDATE_SERVER_URL || defaultBaseUrl;
+
+    // Standard: Return the directory path. electron-updater will append /latest.yml automatically.
+    return `${baseUrl}/${process.platform}/${process.arch}`;
+  }
+
+  private init() {
+    autoUpdater.autoDownload = false; // Set to false for manual triggering
+    autoUpdater.logger = logger;
+    autoUpdater.setFeedURL({
+      provider: 'generic',
+      url: this.getUpdateUrl(),
+    });
+  }
+
+  private setupListeners() {
     autoUpdater.on('checking-for-update', () => {
       this.sendStatusToWindow('checking-for-update');
     });
 
     autoUpdater.on('update-available', (info: UpdateInfo) => {
       this.sendStatusToWindow('update-available', info);
+      logger.info('Update available.');
     });
 
     autoUpdater.on('update-not-available', (info: UpdateInfo) => {
       this.sendStatusToWindow('update-not-available', info);
     });
 
-    autoUpdater.on('error', (err) => {
+    autoUpdater.on('error', err => {
       this.sendStatusToWindow('update-error', err);
+      logger.error(`Update error: ${err.message}`);
     });
 
-    autoUpdater.on('download-progress', (progressObj) => {
+    autoUpdater.on('download-progress', progressObj => {
       this.sendStatusToWindow('download-progress', progressObj);
     });
 
     autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
       this.sendStatusToWindow('update-downloaded', info);
+      logger.info('Update downloaded.');
     });
   }
 
-  private sendStatusToWindow(channel: any, data?: any) {
+  private sendStatusToWindow(channel: UpdateStatus['channel'], data?: unknown) {
     onStatusChange({ channel, data });
   }
 
@@ -64,8 +86,13 @@ export class UpdateService {
     }
   }
 
-  public downloadUpdate() {
-    autoUpdater.downloadUpdate();
+  public async downloadUpdate() {
+    try {
+      return await autoUpdater.downloadUpdate();
+    } catch (error) {
+      logger.error('Download update failed:', error);
+      throw error;
+    }
   }
 
   public quitAndInstall() {

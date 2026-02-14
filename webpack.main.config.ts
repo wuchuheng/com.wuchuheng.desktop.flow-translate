@@ -35,6 +35,10 @@ export const mainConfig: Configuration = {
           from: path.resolve(__dirname, 'src/renderer/assets/genLogo/icon.png'),
           to: path.resolve(__dirname, '.webpack/main/icon.png')
         },
+        { 
+          from: path.resolve(__dirname, 'src/main/app-update.yml'),
+          to: path.resolve(__dirname, '.webpack/main/app-update.yml')
+        },
       ],
     }),
   ],

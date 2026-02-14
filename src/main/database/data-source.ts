@@ -24,7 +24,6 @@ export const initDB = async (): Promise<void> => {
 
     db = new DataSource({
       type: 'better-sqlite3',
-      // @ts-ignore - TypeORM types sometimes conflict with raw driver injection
       driver: sqlite3, // Explicitly inject the driver
       database: isDev ? 'dev.sqlite' : databaseName,
       entities: [Welcome, Config],

@@ -90,6 +90,26 @@ const enTranslations = {
       backToHome: 'Back to Home',
     },
   },
+  update: {
+    available: {
+      title: 'Update Available',
+      message: 'A new version is available. It is being downloaded in the background.',
+    },
+    downloading: {
+      title: 'Downloading Update...',
+    },
+    ready: {
+      title: 'Update Ready to Install',
+      message: 'Version {{version}} has been downloaded. Restart the application to apply the update.',
+    },
+    releaseNotes: 'Release Notes:',
+    restartNow: 'Restart Now',
+    later: 'Later',
+    error: {
+      title: 'Update Error',
+      message: 'An error occurred while updating.',
+    },
+  },
 };
 
 // Chinese translations
@@ -177,6 +197,26 @@ const zhTranslations = {
     },
     navigation: {
       backToHome: '返回首页',
+    },
+  },
+  update: {
+    available: {
+      title: '发现新版本',
+      message: '新版本已发布，正在后台为您下载。',
+    },
+    downloading: {
+      title: '正在下载更新...',
+    },
+    ready: {
+      title: '更新已就绪',
+      message: '版本 {{version}} 已下载完成。请重启应用以应用更新。',
+    },
+    releaseNotes: '更新日志：',
+    restartNow: '立即重启',
+    later: '稍后',
+    error: {
+      title: '更新出错',
+      message: '更新过程中发生错误。',
     },
   },
 };

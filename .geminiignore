@@ -1,0 +1,8 @@
+node_modules
+.git
+.webpack
+out
+dist
+*.sqlite
+logs
+tmp

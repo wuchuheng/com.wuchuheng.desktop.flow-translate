@@ -35,6 +35,29 @@ export let floatingWindow: BrowserWindow | null = null;
 export const getMainWindow = () => mainWindow;
 
 /**
+ * Recreates the main window if it has been closed.
+ */
+export const recreateMainWindow = async () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+    return mainWindow;
+  }
+
+  try {
+    mainWindow = await createWindow();
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+    UpdateService.getInstance().setMainWindow(mainWindow);
+    return mainWindow;
+  } catch (error) {
+    logger.error(`Failed to recreate main window: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+};
+
+/**
  * Registers the global shortcut for toggling the floating window.
  * Reads configuration from the database.
  */
@@ -79,11 +102,14 @@ export const registerGlobalShortcut = async () => {
 app.on('ready', async () => {
   try {
     // 1. Initialize Tray
-    createTray(getMainWindow);
+    createTray(getMainWindow, recreateMainWindow);
 
     // 2. Handle the logic.
     // 2.1 Create the main window.
     mainWindow = await createWindow();
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
 
     // 2.2 Create floating window (hidden by default)
     floatingWindow = await createFloatingWindow();
@@ -93,6 +119,9 @@ app.on('ready', async () => {
 
     // 2.4 Initialize Update Service
     UpdateService.getInstance().setMainWindow(mainWindow);
+    UpdateService.getInstance().checkForUpdates().catch(err => {
+      logger.error('Initial update check failed:', err);
+    });
 
     // 2.5 Bootload the application
     bootload.register({ title: 'Initializing Database ...', load: initDB });
@@ -121,13 +150,7 @@ app.on('before-quit', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-      .then(window => {
-        mainWindow = window;
-      })
-      .catch(error => {
-        logger.error(`Failed to re-create window: ${error instanceof Error ? error.message : String(error)}`);
-      });
+  if (mainWindow === null) {
+    recreateMainWindow();
   }
 });
