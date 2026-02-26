@@ -25,7 +25,7 @@ type IpcModules = {
   };
   update: {
     check: typeof import('../main/ipc/update/check.ipc').default;
-    download: typeof import('../main/ipc/update/download.ipc').default;
+    getState: typeof import('../main/ipc/update/getState.ipc').default;
     install: typeof import('../main/ipc/update/install.ipc').default;
     onStatusChange: typeof import('../main/ipc/update/onStatusChange.ipc').default;
   };
@@ -38,6 +38,7 @@ type IpcModules = {
     maximize: typeof import('../main/ipc/window/maximize.ipc').default;
     minimize: typeof import('../main/ipc/window/minimize.ipc').default;
     onShow: typeof import('../main/ipc/window/onShow.ipc').default;
+    openUpdate: typeof import('../main/ipc/window/openUpdate.ipc').default;
     resize: typeof import('../main/ipc/window/resize.ipc').default;
   };
 };

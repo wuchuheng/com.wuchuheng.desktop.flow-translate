@@ -46,8 +46,8 @@
       "channel": "update:check",
       "type": "invoke"
     },
-    "download": {
-      "channel": "update:download",
+    "getState": {
+      "channel": "update:getState",
       "type": "invoke"
     },
     "install": {
@@ -85,6 +85,10 @@
     "onShow": {
       "channel": "window:onShow",
       "type": "event"
+    },
+    "openUpdate": {
+      "channel": "window:openUpdate",
+      "type": "invoke"
     },
     "resize": {
       "channel": "window:resize",

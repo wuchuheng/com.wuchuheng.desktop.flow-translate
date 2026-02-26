@@ -1,9 +1,5 @@
 import { createEvent } from '../../utils/ipc-helper';
+import type { UpdateState } from '@/shared/update-types';
 
-export type UpdateStatus = {
-  channel: 'checking-for-update' | 'update-available' | 'update-not-available' | 'update-error' | 'download-progress' | 'update-downloaded';
-  data?: unknown;
-};
-
-export const onStatusChange = createEvent<UpdateStatus>();
+export const onStatusChange = createEvent<UpdateState>();
 export default onStatusChange;

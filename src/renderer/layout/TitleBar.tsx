@@ -1,5 +1,8 @@
 import React from 'react';
 import packageJson from '../../../package.json';
+import { useUpdateSystem } from '../hooks/useUpdateSystem';
+import { Tag } from 'antd';
+
 const Icons = {
   MoonIcon: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,7 +36,6 @@ const Icons = {
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
   ),
-  // Make the windows bigger.
   MaxIcon: (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -49,7 +51,6 @@ const Icons = {
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
     </svg>
   ),
-  // Make the windows smaller.
   MinIcon: (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +78,6 @@ const Icons = {
 
 const ThemeIcon = ({ isDark }: { isDark: boolean }) => (isDark ? Icons.MoonIcon : Icons.SunIcon);
 
-// Interface for title bar props
 interface TitleBarProps {
   isDarkTheme: boolean;
   onToggleTheme: () => void;
@@ -85,29 +85,34 @@ interface TitleBarProps {
 }
 
 const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggleLanguage }) => {
-  // Window control functions
-  const handleMinimize = () => {
-    window.electron.window.minimize();
-  };
+  const { status, info, openUpdateWindow } = useUpdateSystem();
 
-  const handleMaximize = () => {
-    window.electron.window.maximize();
-  };
+  const handleMinimize = () => window.electron.window.minimize();
+  const handleMaximize = () => window.electron.window.maximize();
+  const handleClose = () => window.electron.window.close();
 
-  const handleClose = () => {
-    window.electron.window.close();
+  const handleUpdateClick = () => {
+    if (status === 'ready' && info) {
+      openUpdateWindow();
+    }
   };
 
   return (
-    <div className="titlebar flex items-center justify-between px-2 py-2 h-titlebar select-none drag  text-text-primary">
-      {/* App Title - Left side */}
+    <div className="titlebar flex items-center justify-between px-2 py-2 h-titlebar select-none drag text-text-primary">
       <div className="flex items-center space-x-3 no-drag">
-        <span className="text-sm font-medium opacity-80 ">{packageJson.productName}</span>
+        <span className="text-sm font-medium opacity-80">{packageJson.productName}</span>
+        {status === 'ready' && info && (
+          <Tag
+            color="green"
+            className="text-xs cursor-pointer"
+            onClick={handleUpdateClick}
+          >
+            Update Ready: v{info.version}
+          </Tag>
+        )}
       </div>
 
-      {/* Controls - Right side */}
       <div className="flex items-center space-x-1 no-drag">
-        {/* Language switcher */}
         <button
           onClick={onToggleLanguage}
           className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
@@ -116,19 +121,14 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
           {Icons.LanguageIcon}
         </button>
 
-        {/* Theme toggle */}
         <button
-          onClick={e => {
-            e.stopPropagation();
-            onToggleTheme();
-          }}
+          onClick={onToggleTheme}
           className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
           aria-label="Toggle Theme"
         >
           <ThemeIcon isDark={isDarkTheme} />
         </button>
 
-        {/* Window controls */}
         <button
           onClick={handleMinimize}
           className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
@@ -139,7 +139,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
 
         <button
           onClick={handleMaximize}
-          className="itlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
+          className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
           aria-label="Maximize"
         >
           <span className="text-text-secondary">{Icons.MaxIcon}</span>

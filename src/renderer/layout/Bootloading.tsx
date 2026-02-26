@@ -33,10 +33,12 @@ export const Bootloading: React.FC<BootloadingProps> = ({ children }) => {
 
   useEffect(() => {
     getProgress().then(result => {
+      console.log('Bootload progress result:', JSON.stringify(result));
       setProcessing(result);
     });
 
     return window.electron.system.bootloading(value => {
+      console.log('Bootload event received:', JSON.stringify(value));
       setProcessing(value);
     });
   }, []);

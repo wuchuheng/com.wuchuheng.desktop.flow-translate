@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ThemeConfig, DEFAULT_THEME_CONFIG, CONFIG_KEYS } from '../../shared/constants';
+import { ThemeConfig, DEFAULT_THEME_CONFIG, CONFIG_KEYS } from '@/shared/constants';
 import { useTheme } from './useTheme';
 
 export const useAppTheme = () => {

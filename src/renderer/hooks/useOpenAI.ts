@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import OpenAI from 'openai';
 import { message } from 'antd';
-import { AI_PROVIDER_CATALOG, AiConfig } from '../../shared/constants';
+import { AI_PROVIDER_CATALOG, AiConfig } from '@/shared/constants';
 
 export const useOpenAI = () => {
   const [fetchingModels, setFetchingModels] = useState(false);

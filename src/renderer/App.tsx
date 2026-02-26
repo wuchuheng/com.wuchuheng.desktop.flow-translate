@@ -6,17 +6,14 @@ import './styles/global.css';
 import './i18n/i18n';
 import { MainLayout } from './layout/MainLayout';
 
-// Wait for DOM to be ready before mounting React
-document.addEventListener('DOMContentLoaded', () => {
-  const root = ReactDOM.createRoot(document.getElementById('app') as HTMLElement);
+const root = ReactDOM.createRoot(document.getElementById('app') as HTMLElement);
 
-  root.render(
-    <React.StrictMode>
-      <HashRouter>
-        <MainLayout>
-          <AppRoutes />
-        </MainLayout>
-      </HashRouter>
-    </React.StrictMode>
-  );
-});
+root.render(
+  <React.StrictMode>
+    <HashRouter>
+      <MainLayout>
+        <AppRoutes />
+      </MainLayout>
+    </HashRouter>
+  </React.StrictMode>
+);

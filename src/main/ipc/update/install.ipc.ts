@@ -1,5 +1,5 @@
-import { UpdateService } from '../../services/update.service';
+import { quitAndInstall } from '../../services/update.service';
 
 export default async function install() {
-  UpdateService.getInstance().quitAndInstall();
+  quitAndInstall();
 }

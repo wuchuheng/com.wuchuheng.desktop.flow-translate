@@ -93,3 +93,7 @@ out/
 
 *.sqlite
 *.sqlite*
+
+# Build output (compiled app and installers)
+dist/
+build/

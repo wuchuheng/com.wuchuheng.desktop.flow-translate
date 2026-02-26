@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Form, Input, Button, message, Switch, Divider } from 'antd';
 import { useConfig } from '../../../hooks/useConfig';
-import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '../../../../shared/constants';
+import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
 
 const DEFAULT_HOTKEY = { toggleWindow: 'CommandOrControl+Alt+T' };
 

@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity()
 export class Config {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: 'text' })
   key: string;
 
   @Column('simple-json')

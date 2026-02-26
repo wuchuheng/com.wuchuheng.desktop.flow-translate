@@ -20,6 +20,31 @@ Developer-friendly Electron + React + Tailwind template with zero-config IPC dis
 - `npm run make` / `npm run package` — Build artifacts (types sync runs first).
 - `npm run lint` / `npm run format` — Lint/format.
 
+## Hot Update System
+
+The template features a zero-friction auto-update system designed for maximum security and minimal user interruption.
+
+### 1. How it works
+- **Silent Background Download**: The app automatically checks for updates on startup. If a new version is found, it downloads it immediately in the background without bothering the user.
+- **Mandatory Notification**: Once the download is 100% complete, a professional dialog appears, showing the release notes and requiring a restart to apply the update.
+
+### 2. Customizing `latest.yml`
+Simply update the `version` and `releaseNotes` on your server. The app handles the rest.
+
+```yaml
+version: 1.0.25
+releaseNotes: |
+  ### 🚀 Performance Boost
+  - Startup is now 50% faster.
+  - Reduced memory usage.
+```
+
+### 3. Safety & Reliability
+- **Retry Mechanism**: If the download is interrupted, it resumes on the next startup.
+- **Differential Updates**: Only downloads changed bytes (via blockmap), saving user bandwidth.
+- **Crash Resistance**: The update logic runs in the main process, independent of the UI.
+
+
 ## IPC Model (Main ↔ Renderer)
 1) **Convention over config**: Add files at `src/main/ipc/<module>/<name>.ipc.ts`.
    - Invoke example: export an async function `(payload) => result`.

@@ -5,7 +5,7 @@ import { BrowserWindow } from 'electron';
 import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
 import OpenAI from 'openai';
-import { AI_PROVIDER_CATALOG, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '../../../shared/constants';
+import { AI_PROVIDER_CATALOG, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
 import { Stream } from 'openai/streaming';
 import { ChatCompletionChunk, ChatCompletionCreateParams } from 'openai/resources/chat/completions';
 

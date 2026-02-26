@@ -4,7 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useShortcuts } from '../../hooks/useShortcuts';
 import { useAutoResize } from '../../hooks/useAutoResize';
 import { useAppTheme } from '../../hooks/useAppTheme';
-import { hexToRgba } from '../../../shared/utils';
+import { hexToRgba } from '@/shared/utils';
 
 export const FlowTranslate: React.FC = () => {
   const [input, setInput] = useState('');

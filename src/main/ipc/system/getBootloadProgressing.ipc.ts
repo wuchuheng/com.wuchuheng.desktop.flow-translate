@@ -1,7 +1,7 @@
-import { getCurrentProcessing } from '../../services/bootload.service';
+import { getBootProgress } from '../../services/bootload.service';
 
 const getBootloadProgressing = async () => {
-  return getCurrentProcessing();
+  return getBootProgress();
 };
 
 export default getBootloadProgressing;

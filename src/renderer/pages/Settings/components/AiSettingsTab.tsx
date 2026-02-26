@@ -5,7 +5,7 @@ import { Stream } from 'openai/streaming';
 import type { ChatCompletionCreateParams, ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { useConfig } from '../../../hooks/useConfig';
 import { useOpenAI } from '../../../hooks/useOpenAI';
-import { AI_PROVIDER_CATALOG, AiConfig, DEFAULT_AI_CONFIG, CONFIG_KEYS } from '../../../../shared/constants';
+import { AI_PROVIDER_CATALOG, AiConfig, DEFAULT_AI_CONFIG, CONFIG_KEYS } from '@/shared/constants';
 
 const { TextArea } = Input;
 const { Option } = Select;

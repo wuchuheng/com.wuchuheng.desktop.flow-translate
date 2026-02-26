@@ -16,12 +16,18 @@ export const createTray = (
   if (tray) return tray;
 
   try {
-    // In production/dev with Webpack, we can copy the asset to the output dir
-    const iconPath = path.join(__dirname, 'icon.ico');
-    const icon = nativeImage.createFromPath(iconPath);
+    // In packaged app, the icon is typically configured in electron-builder and embedded,
+    // but for the Tray, we need a physical file or native image.
+    // electron-builder copies extraResources if configured, but an easier way is to just use
+    // the source path in dev, and a dedicated resource path in prod.
+    const finalIconPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'icon.ico')
+      : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico');
+
+    const icon = nativeImage.createFromPath(finalIconPath);
     
     if (icon.isEmpty()) {
-       logger.error(`Tray icon is empty at path: ${iconPath}`);
+       logger.error(`Tray icon is empty at path: ${finalIconPath}`);
     }
     
     tray = new Tray(icon);

@@ -31,14 +31,13 @@ export const setupAllIpcHandlers = (): void => {
   logger.info('Setting up all IPC handlers');
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const requireIpcModule = (require as any).context('./', true, /\.ipc\.ts$/);
-    const ipcModuleFiles = requireIpcModule.keys();
+    const ipcModules = import.meta.glob('./**/*.ipc.ts', { eager: true });
+    const ipcModuleFiles = Object.keys(ipcModules);
 
     ipcModuleFiles.forEach((filename: string) => {
       try {
         const { channel, moduleName, methodName } = normalizeChannel(filename);
-        const imported: IpcModule = requireIpcModule(filename);
+        const imported = ipcModules[filename] as IpcModule;
         const handler = imported?.default;
 
         if (!handler) {

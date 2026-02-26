@@ -29,7 +29,8 @@ export const mainConfig: Configuration = {
   externals: {
     // Keep the native module external
     'better-sqlite3': 'commonjs better-sqlite3',
-    // DO NOT put 'typeorm' here; let it be bundled
+    // Keep typeorm external to avoid path resolution errors
+    'typeorm': 'commonjs typeorm',
   },
   // ...
 };

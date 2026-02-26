@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Form, Radio, Slider, ColorPicker, Button, message } from 'antd';
 import { useConfig } from '../../../hooks/useConfig';
-import { ThemeConfig, DEFAULT_THEME_CONFIG, CONFIG_KEYS } from '../../../../shared/constants';
-import { hexToRgba } from '../../../../shared/utils';
+import { ThemeConfig, DEFAULT_THEME_CONFIG, CONFIG_KEYS } from '@/shared/constants';
+import { hexToRgba } from '@/shared/utils';
 
 export const ThemeSettingsTab: React.FC = () => {
   const { config, saveConfig, loading } = useConfig<ThemeConfig>(CONFIG_KEYS.THEME, DEFAULT_THEME_CONFIG);

@@ -1,0 +1,41 @@
+productName: Flow Translate
+copyright: Copyright © 2026 wuchuheng
+
+directories:
+  buildResources: build
+
+files:
+  - out/**/*
+  - package.json
+  - node_modules/better-sqlite3/**/*
+  - node_modules/bindings/**/*
+  - node_modules/file-uri-to-path/**/*
+
+extraResources:
+  - from: src/main/app-update.yml
+    to: app-update.yml
+  - from: src/renderer/assets/genLogo/icon.ico
+    to: icon.ico
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: src/renderer/assets/genLogo/icon.ico
+
+asar: true
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**/*"
+
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  deleteAppDataOnUninstall: false
+
+# This ensures electron-updater works correctly
+protocols:
+  name: flow-translate
+  schemes:
+    - flow-translate

@@ -1,8 +1,8 @@
 import { app, BrowserWindow, globalShortcut, screen } from 'electron';
 import * as dotenv from 'dotenv';
+import * as childProcess from 'child_process';
 import { setupAllIpcHandlers } from './ipc';
 import { createWindow, createFloatingWindow } from './windows/windowFactory';
-import { bootload } from './services/bootload.service';
 import { initDB, getDataSource } from './database/data-source';
 import { logger } from './utils/logger';
 import { capturePreviousWindow } from './utils/win-api-helper';
@@ -10,7 +10,8 @@ import { onShow } from './ipc/window/onShow.ipc';
 import { Config } from './database/entities/config.entity';
 import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '../shared/constants';
 import { createTray } from './utils/tray-helper';
-import { UpdateService } from './services/update.service';
+import { initUpdateService, checkForUpdates, handleAppQuitUpdate } from './services/update.service';
+import { registerBootTask, runBootTasks } from './services/bootload.service';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -20,14 +21,22 @@ declare global {
 // Ensure UTF-8 encoding on Windows
 if (process.platform === 'win32') {
   process.env.LANG = 'en_US.UTF-8';
+  // Force set console code page to UTF-8 for child processes and logging
+  try {
+    // Using child_process module directly
+    childProcess.execSync('chcp 65001', { stdio: 'ignore' });
+  } catch {
+    // Fail silently if chcp is not available
+  }
 }
 
 dotenv.config();
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
-}
+app.on('before-quit', () => {
+  global.isForceQuitting = true;
+  // EMERGENCY UPDATE CHECK: If an update is downloaded, install it now!
+  handleAppQuitUpdate();
+});
 
 let mainWindow: BrowserWindow | null = null;
 export let floatingWindow: BrowserWindow | null = null;
@@ -49,7 +58,6 @@ export const recreateMainWindow = async () => {
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
-    UpdateService.getInstance().setMainWindow(mainWindow);
     return mainWindow;
   } catch (error) {
     logger.error(`Failed to recreate main window: ${error instanceof Error ? error.message : String(error)}`);
@@ -118,14 +126,14 @@ app.on('ready', async () => {
     setupAllIpcHandlers();
 
     // 2.4 Initialize Update Service
-    UpdateService.getInstance().setMainWindow(mainWindow);
-    UpdateService.getInstance().checkForUpdates().catch(err => {
+    initUpdateService();
+    checkForUpdates().catch(err => {
       logger.error('Initial update check failed:', err);
     });
 
     // 2.5 Bootload the application
-    bootload.register({ title: 'Initializing Database ...', load: initDB });
-    await bootload.boot();
+    registerBootTask({ title: 'Initializing Database ...', load: initDB });
+    await runBootTasks();
 
     // 2.6 Register global shortcut after DB is ready
     await registerGlobalShortcut();
@@ -143,10 +151,6 @@ app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin' && !appConfig.runInBackground) {
     app.quit();
   }
-});
-
-app.on('before-quit', () => {
-  global.isForceQuitting = true;
 });
 
 app.on('activate', () => {

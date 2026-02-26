@@ -1,5 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import manifest from '../shared/ipc-manifest.json';
+import manifestRaw from '../shared/ipc-manifest.json';
+
+// Handle potential ESM wrapping where the JSON object is inside a 'default' property
+const manifest = (manifestRaw && typeof manifestRaw === 'object' && 'default' in manifestRaw 
+  ? manifestRaw.default 
+  : manifestRaw) as IpcManifest;
 
 type IpcManifest = Record<
   string,

@@ -1,12 +1,11 @@
 import React, { useCallback, useState, useEffect, createContext } from 'react';
 import TitleBar from './TitleBar';
-import { ConfigProvider, theme , message, notification } from 'antd';
+import { ConfigProvider, theme , message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Bootloading } from './Bootloading';
 import { MessageInstance } from 'antd/es/message/interface';
 
 import { useLocation } from 'react-router-dom';
-import { useUpdateSystem } from '../hooks/useUpdateSystem';
 
 export const MessageContext = createContext<MessageInstance | undefined>(undefined);
 
@@ -18,7 +17,6 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
   const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
 
   const [messageApi, contextHolder] = message.useMessage();
-  const { contextHolder: updateContextHolder } = useUpdateSystem();
 
   // Initialize theme on component mount - default to light theme
   useEffect(() => {
@@ -42,8 +40,10 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
   }, [i18n]);
 
   const isFlowTranslate = location.pathname.includes('/flow-translate');
+  const isUpdateDialog = location.pathname.includes('/update-dialog');
+  
   const MainLayoutWindows: React.FC = () =>
-    isFlowTranslate ? (
+    isFlowTranslate || isUpdateDialog ? (
       <>{props.children}</>
     ) : (
       <div className={`flex h-[100vh] flex-col ${isFlowTranslate ? 'bg-transparent' : 'bg-background-primary'}`}>
@@ -65,7 +65,6 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
       }}
     >
       {contextHolder}
-      {updateContextHolder}
       <MessageContext.Provider value={messageApi}>
         <MainLayoutWindows />
       </MessageContext.Provider>

@@ -231,7 +231,7 @@ i18n
       zh: { translation: zhTranslations },
     },
     fallbackLng: 'zh',
-    debug: process.env.NODE_ENV === 'development',
+    debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false, // React already safes from XSS
     },
