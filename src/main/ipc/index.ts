@@ -31,7 +31,8 @@ export const setupAllIpcHandlers = (): void => {
   logger.info('Setting up all IPC handlers');
 
   try {
-    const ipcModules = import.meta.glob('./**/*.ipc.ts', { eager: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ipcModules = (import.meta as any).glob('./**/*.ipc.ts', { eager: true });
     const ipcModuleFiles = Object.keys(ipcModules);
 
     ipcModuleFiles.forEach((filename: string) => {

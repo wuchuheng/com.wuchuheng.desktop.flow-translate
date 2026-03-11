@@ -37,5 +37,10 @@ export const useShortcuts = (onSubmit: () => void, onClose: () => void) => {
     }
   };
 
-  return { handleKeyDown, resetSpaceTimes: () => { spacePressTimes.current = []; } };
+  return {
+    handleKeyDown,
+    resetSpaceTimes: () => {
+      spacePressTimes.current = [];
+    },
+  };
 };

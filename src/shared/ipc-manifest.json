@@ -13,6 +13,12 @@
       "type": "invoke"
     }
   },
+  "grammarly": {
+    "openAuth": {
+      "channel": "grammarly:openAuth",
+      "type": "invoke"
+    }
+  },
   "system": {
     "bootloading": {
       "channel": "system:bootloading",
@@ -57,12 +63,6 @@
     "onStatusChange": {
       "channel": "update:onStatusChange",
       "type": "event"
-    }
-  },
-  "welcome": {
-    "getWelcome": {
-      "channel": "welcome:getWelcome",
-      "type": "invoke"
     }
   },
   "window": {

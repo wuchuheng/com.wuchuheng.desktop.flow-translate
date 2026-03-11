@@ -77,7 +77,8 @@ async function extractReleaseNotes(version: string): Promise<string> {
 function runCommand(cmd: string) {
   console.log(`🏃 ${cmd}`);
   try {
-    execSync(cmd, { stdio: 'inherit', shell: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    execSync(cmd, { stdio: 'inherit', shell: true as any });
   } catch {
     console.error(`❌ Command failed: ${cmd}`);
     process.exit(1);

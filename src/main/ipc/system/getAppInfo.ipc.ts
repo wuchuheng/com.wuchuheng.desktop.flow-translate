@@ -22,7 +22,9 @@ const getAppInfo = async (): Promise<AppInfo> => {
     description = packageJson.description;
     productName = packageJson.productName;
     author = typeof packageJson.author === 'object' ? packageJson.author.name : packageJson.author;
-    website = packageJson.homepage || (typeof packageJson.repository === 'object' ? packageJson.repository.url : packageJson.repository);
+    website =
+      packageJson.homepage ||
+      (typeof packageJson.repository === 'object' ? packageJson.repository.url : packageJson.repository);
   } catch (error) {
     // Fallback if package.json is not accessible
     description = 'AI-powered translation tool';

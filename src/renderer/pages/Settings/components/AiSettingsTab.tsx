@@ -57,7 +57,7 @@ export const AiSettingsTab: React.FC = () => {
 
   const handleTestChat = async () => {
     if (!testInput.trim() || isTesting) return;
-    
+
     const currentInput = testInput;
     setTestInput('');
     setIsTesting(true);
@@ -76,9 +76,9 @@ export const AiSettingsTab: React.FC = () => {
       }
 
       const promptTemplate = values.systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;
-      
+
       const newMessages: ChatMessage[] = [...chatMessages];
-      
+
       // If first message, handle system prompt logic
       if (newMessages.length === 0) {
         if (promptTemplate.includes('{text}')) {
@@ -132,10 +132,7 @@ export const AiSettingsTab: React.FC = () => {
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : JSON.stringify(error);
-      setChatMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: `[Error: ${msg}]` }
-      ]);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: `[Error: ${msg}]` }]);
     } finally {
       setIsTesting(false);
     }
@@ -159,7 +156,7 @@ export const AiSettingsTab: React.FC = () => {
   const enableThinking = Form.useWatch('enableThinking', form);
 
   return (
-    <div className="relative grid h-full grid-cols-1 overflow-hidden lg:grid-cols-12 gap-6">
+    <div className="relative grid h-full grid-cols-1 gap-6 overflow-hidden lg:grid-cols-12">
       {contextHolder}
       {/* LEFT: CONFIG */}
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-[#1e1e2e] lg:col-span-7">
@@ -185,7 +182,7 @@ export const AiSettingsTab: React.FC = () => {
             {(() => {
               const currentProvider = AI_PROVIDER_CATALOG.find(p => p.id === selectedProviderId);
               return currentProvider?.docsUrl ? (
-                <div className="mb-4 -mt-4 flex items-start gap-2 rounded border border-blue-100 bg-blue-50 p-2 text-xs text-gray-500 dark:border-blue-900/30 dark:bg-blue-900/20">
+                <div className="-mt-4 mb-4 flex items-start gap-2 rounded border border-blue-100 bg-blue-50 p-2 text-xs text-gray-500 dark:border-blue-900/30 dark:bg-blue-900/20">
                   <InfoCircleOutlined className="mt-0.5 text-blue-500" />
                   <span>
                     Need an API Key? Check the{' '}
@@ -246,32 +243,38 @@ export const AiSettingsTab: React.FC = () => {
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-[#1e1e2e] lg:col-span-5">
         <div className="flex items-center justify-between border-b bg-gray-50/50 p-4 dark:border-white/5 dark:bg-white/5">
           <h3 className="m-0 font-semibold text-gray-700 dark:text-gray-200">Test Playground</h3>
-          <Button size="small" onClick={clearChat} className="text-xs">Clear Chat</Button>
+          <Button size="small" onClick={clearChat} className="text-xs">
+            Clear Chat
+          </Button>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto bg-gray-50 p-4 dark:bg-[#11111b] flex flex-col gap-4">
+        <div className="custom-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto bg-gray-50 p-4 dark:bg-[#11111b]">
           {chatMessages.length === 0 && (
             <div className="flex h-full items-center justify-center text-sm text-gray-400">
               Start a conversation to test your settings...
             </div>
           )}
-          
+
           {chatMessages.map((m, i) => (
             <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-[90%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
-                m.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tr-none' 
-                  : m.role === 'system'
-                  ? 'bg-gray-200 text-gray-600 italic rounded-tl-none dark:bg-gray-800 dark:text-gray-400'
-                  : 'bg-white text-gray-800 rounded-tl-none dark:bg-[#252539] dark:text-gray-200'
-              }`}>
+              <div
+                className={`max-w-[90%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                  m.role === 'user'
+                    ? 'rounded-tr-none bg-blue-600 text-white'
+                    : m.role === 'system'
+                      ? 'rounded-tl-none bg-gray-200 italic text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      : 'rounded-tl-none bg-white text-gray-800 dark:bg-[#252539] dark:text-gray-200'
+                }`}
+              >
                 {enableThinking && m.reasoning && (
                   <div className="mb-2 rounded border-l-2 border-blue-400 bg-blue-50/50 p-2 text-xs italic text-gray-500 dark:bg-blue-900/10">
-                    <div className="font-bold text-blue-500 text-[10px] uppercase mb-1">Reasoning</div>
+                    <div className="mb-1 text-[10px] font-bold uppercase text-blue-500">Reasoning</div>
                     {m.reasoning}
                   </div>
                 )}
-                <div className="whitespace-pre-wrap">{m.content || (isTesting && i === chatMessages.length - 1 ? '...' : '')}</div>
+                <div className="whitespace-pre-wrap">
+                  {m.content || (isTesting && i === chatMessages.length - 1 ? '...' : '')}
+                </div>
               </div>
             </div>
           ))}
@@ -299,7 +302,7 @@ export const AiSettingsTab: React.FC = () => {
               icon={isTesting ? <LoadingOutlined /> : <SendOutlined />}
               onClick={handleTestChat}
               disabled={isTesting || !testInput.trim()}
-              className="absolute right-2 bottom-1 shadow-md"
+              className="absolute bottom-1 right-2 shadow-md"
             />
           </div>
         </div>

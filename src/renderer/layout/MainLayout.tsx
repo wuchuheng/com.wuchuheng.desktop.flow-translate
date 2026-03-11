@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect, createContext } from 'react';
 import TitleBar from './TitleBar';
-import { ConfigProvider, theme , message } from 'antd';
+import { ConfigProvider, theme, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Bootloading } from './Bootloading';
 import { MessageInstance } from 'antd/es/message/interface';
@@ -41,7 +41,7 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
 
   const isFlowTranslate = location.pathname.includes('/flow-translate');
   const isUpdateDialog = location.pathname.includes('/update-dialog');
-  
+
   const MainLayoutWindows: React.FC = () =>
     isFlowTranslate || isUpdateDialog ? (
       <>{props.children}</>

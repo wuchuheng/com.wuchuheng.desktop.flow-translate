@@ -98,24 +98,20 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
   };
 
   return (
-    <div className="titlebar flex items-center justify-between px-2 py-2 h-titlebar select-none drag text-text-primary">
-      <div className="flex items-center space-x-3 no-drag">
+    <div className="titlebar drag flex h-titlebar select-none items-center justify-between px-2 py-2 text-text-primary">
+      <div className="no-drag flex items-center space-x-3">
         <span className="text-sm font-medium opacity-80">{packageJson.productName}</span>
         {status === 'ready' && info && (
-          <Tag
-            color="green"
-            className="text-xs cursor-pointer"
-            onClick={handleUpdateClick}
-          >
+          <Tag color="green" className="cursor-pointer text-xs" onClick={handleUpdateClick}>
             Update Ready: v{info.version}
           </Tag>
         )}
       </div>
 
-      <div className="flex items-center space-x-1 no-drag">
+      <div className="no-drag flex items-center space-x-1">
         <button
           onClick={onToggleLanguage}
-          className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
+          className="titlebar-button rounded-md p-2 transition-all duration-200 hover:bg-hover hover:text-text-primary"
           aria-label="Switch Language"
         >
           {Icons.LanguageIcon}
@@ -123,7 +119,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
 
         <button
           onClick={onToggleTheme}
-          className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
+          className="titlebar-button rounded-md p-2 transition-all duration-200 hover:bg-hover hover:text-text-primary"
           aria-label="Toggle Theme"
         >
           <ThemeIcon isDark={isDarkTheme} />
@@ -131,7 +127,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
 
         <button
           onClick={handleMinimize}
-          className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
+          className="titlebar-button rounded-md p-2 transition-all duration-200 hover:bg-hover hover:text-text-primary"
           aria-label="Minimize"
         >
           <span className="text-text-secondary">{Icons.MinIcon}</span>
@@ -139,7 +135,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
 
         <button
           onClick={handleMaximize}
-          className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
+          className="titlebar-button rounded-md p-2 transition-all duration-200 hover:bg-hover hover:text-text-primary"
           aria-label="Maximize"
         >
           <span className="text-text-secondary">{Icons.MaxIcon}</span>
@@ -147,7 +143,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
 
         <button
           onClick={handleClose}
-          className="titlebar-button close p-2 rounded-md hover:bg-close-hover hover:text-close-hover-text transition-all duration-200"
+          className="titlebar-button close rounded-md p-2 transition-all duration-200 hover:bg-close-hover hover:text-close-hover-text"
           aria-label="Close"
         >
           <span className="text-text-secondary hover:text-white">{Icons.CloseIcon}</span>

@@ -34,4 +34,3 @@ export const useAutoResize = (
     return () => observer.disconnect();
   }, [ref, width, minHeight, maxHeight]);
 };
-

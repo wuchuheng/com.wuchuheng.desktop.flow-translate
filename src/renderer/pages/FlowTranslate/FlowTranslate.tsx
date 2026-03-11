@@ -70,7 +70,7 @@ export const FlowTranslate: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={`font-sans w-full max-h-screen overflow-hidden ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
+      className={`max-h-screen w-full overflow-hidden font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
     >
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -94,14 +94,14 @@ export const FlowTranslate: React.FC = () => {
         }
       `}</style>
       <div
-        className="h-full w-full flex flex-col overflow-hidden rounded-2xl backdrop-blur-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
+        className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
         style={dynamicBgStyle}
       >
-        <div className="flex-1 flex flex-col overflow-hidden relative min-h-0">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           {!isTranslating && !translation && (
             <textarea
               ref={textareaRef}
-              className="w-full min-h-[60px] max-h-full [field-sizing:content] bg-transparent text-lg font-medium leading-relaxed p-4 border-none focus:ring-0 resize-none outline-none overflow-y-auto custom-scrollbar text-inherit placeholder-gray-400 dark:placeholder-white/20"
+              className="custom-scrollbar max-h-full min-h-[60px] w-full resize-none overflow-y-auto border-none bg-transparent p-4 text-lg font-medium leading-relaxed text-inherit placeholder-gray-400 outline-none [field-sizing:content] focus:ring-0 dark:placeholder-white/20"
               placeholder="Ask Flow..."
               value={input}
               onChange={handleInputChange}
@@ -111,23 +111,23 @@ export const FlowTranslate: React.FC = () => {
           )}
 
           {(isTranslating || translation) && (
-            <div className="p-4 flex flex-col gap-2 h-full overflow-y-auto custom-scrollbar">
+            <div className="custom-scrollbar flex h-full flex-col gap-2 overflow-y-auto p-4">
               <div
                 className={`mb-1 text-xs font-bold uppercase tracking-widest ${hasError ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}
               >
                 {hasError ? 'Error' : 'Translation'}
               </div>
-              <div className="text-lg leading-relaxed font-light text-inherit">
+              <div className="text-lg font-light leading-relaxed text-inherit">
                 {translation || 'Thinking...'}
                 {isTranslating && (
-                  <span className="ml-1 inline-block h-5 w-1.5 animate-pulse rounded-full align-middle bg-blue-500 dark:bg-blue-400" />
+                  <span className="ml-1 inline-block h-5 w-1.5 animate-pulse rounded-full bg-blue-500 align-middle dark:bg-blue-400" />
                 )}
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex-none flex items-center justify-between px-4 py-3 border-t text-xs font-medium bg-black/[0.02] border-black/5 text-gray-400 dark:bg-white/5 dark:border-white/5 dark:text-white/40">
+        <div className="flex flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-4 py-3 text-xs font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40">
           <div className="flex items-center gap-1">
             <svg
               width="14"
@@ -145,6 +145,21 @@ export const FlowTranslate: React.FC = () => {
               <path d="M2 12h20" />
             </svg>
             <span>Flow Translate</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Grammarly sign-in button — opens a login window in the shared Grammarly session */}
+            <button
+              title="Sign in to Grammarly"
+              onClick={() => window.electron.grammarly.openAuth()}
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold text-green-600 opacity-60 transition-opacity hover:opacity-100 dark:text-green-400"
+            >
+              {/* Grammarly G icon */}
+              <svg width="12" height="12" viewBox="0 0 32 32" fill="currentColor">
+                <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2zm0 4a10 10 0 0 1 7.94 3.94L20.5 13.38A5.98 5.98 0 0 0 16 11a5 5 0 0 0 0 10 5.02 5.02 0 0 0 4.9-4H16v-3.5h8.46c.07.48.11.97.11 1.5 0 5.523-4.477 10-10 10S6 20.523 6 16 10.477 6 16 6z"/>
+              </svg>
+              Grammarly
+            </button>
           </div>
 
           <div className="flex items-center gap-3">
@@ -179,7 +194,7 @@ export const FlowTranslate: React.FC = () => {
             ) : (
               <span className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 bg-blue-500 dark:bg-blue-400"></span>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75 dark:bg-blue-400"></span>
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500"></span>
                 </span>
                 Processing...

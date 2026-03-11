@@ -29,11 +29,9 @@ export const useUpdateSystem = () => {
     fetchState();
 
     // Subscribe to state changes
-    const unsubscribe = window.electron.update.onStatusChange(
-      (newState: UpdateState) => {
-        setState(newState);
-      }
-    );
+    const unsubscribe = window.electron.update.onStatusChange((newState: UpdateState) => {
+      setState(newState);
+    });
 
     return () => unsubscribe();
   }, []);

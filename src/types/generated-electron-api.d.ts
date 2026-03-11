@@ -13,6 +13,9 @@ type IpcModules = {
     onThemeUpdate: typeof import('../main/ipc/config/onThemeUpdate.ipc').default;
     save: typeof import('../main/ipc/config/save.ipc').default;
   };
+  grammarly: {
+    openAuth: typeof import('../main/ipc/grammarly/openAuth.ipc').default;
+  };
   system: {
     bootloading: typeof import('../main/ipc/system/bootloading.ipc').default;
     getAppInfo: typeof import('../main/ipc/system/getAppInfo.ipc').default;
@@ -28,9 +31,6 @@ type IpcModules = {
     getState: typeof import('../main/ipc/update/getState.ipc').default;
     install: typeof import('../main/ipc/update/install.ipc').default;
     onStatusChange: typeof import('../main/ipc/update/onStatusChange.ipc').default;
-  };
-  welcome: {
-    getWelcome: typeof import('../main/ipc/welcome/getWelcome.ipc').default;
   };
   window: {
     close: typeof import('../main/ipc/window/close.ipc').default;

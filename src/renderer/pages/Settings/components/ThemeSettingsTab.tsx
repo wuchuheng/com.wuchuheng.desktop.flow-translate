@@ -39,7 +39,7 @@ export const ThemeSettingsTab: React.FC = () => {
   };
 
   return (
-    <div className="relative grid h-full grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="relative grid h-full grid-cols-1 gap-6 lg:grid-cols-12">
       {contextHolder}
       {/* LEFT: CONFIG */}
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-[#1e1e2e] lg:col-span-5">
@@ -72,7 +72,9 @@ export const ThemeSettingsTab: React.FC = () => {
 
       {/* RIGHT: PREVIEW */}
       <div className="relative flex h-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-200 p-8 dark:border-white/10 lg:col-span-7">
-        <div className="absolute left-4 top-4 text-xs font-bold uppercase tracking-widest text-gray-500">Live Preview</div>
+        <div className="absolute left-4 top-4 text-xs font-bold uppercase tracking-widest text-gray-500">
+          Live Preview
+        </div>
 
         {/* Checkerboard Pattern CSS */}
         <div

@@ -25,11 +25,11 @@ export const createTray = (
       : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico');
 
     const icon = nativeImage.createFromPath(finalIconPath);
-    
+
     if (icon.isEmpty()) {
-       logger.error(`Tray icon is empty at path: ${finalIconPath}`);
+      logger.error(`Tray icon is empty at path: ${finalIconPath}`);
     }
-    
+
     tray = new Tray(icon);
 
     const contextMenu = Menu.buildFromTemplate([
@@ -43,7 +43,7 @@ export const createTray = (
           } else {
             await recreateMainWindow();
           }
-        }
+        },
       },
       { type: 'separator' },
       {
@@ -52,8 +52,8 @@ export const createTray = (
           // Use a custom property or global variable to indicate force quit
           global.isForceQuitting = true;
           app.quit();
-        }
-      }
+        },
+      },
     ]);
 
     tray.setToolTip('Flow Translate');

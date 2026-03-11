@@ -6,9 +6,17 @@ import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
 const DEFAULT_HOTKEY = { toggleWindow: 'CommandOrControl+Alt+T' };
 
 export const GeneralSettingsTab: React.FC = () => {
-  const { config: hotkeyConfig, saveConfig: saveHotkeyConfig, loading: hotkeyLoading } = useConfig<{ toggleWindow: string }>(CONFIG_KEYS.HOTKEYS, DEFAULT_HOTKEY);
-  const { config: appConfig, saveConfig: saveAppConfig, loading: appLoading } = useConfig<AppConfig>(CONFIG_KEYS.APP, DEFAULT_APP_CONFIG);
-  
+  const {
+    config: hotkeyConfig,
+    saveConfig: saveHotkeyConfig,
+    loading: hotkeyLoading,
+  } = useConfig<{ toggleWindow: string }>(CONFIG_KEYS.HOTKEYS, DEFAULT_HOTKEY);
+  const {
+    config: appConfig,
+    saveConfig: saveAppConfig,
+    loading: appLoading,
+  } = useConfig<AppConfig>(CONFIG_KEYS.APP, DEFAULT_APP_CONFIG);
+
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -23,17 +31,17 @@ export const GeneralSettingsTab: React.FC = () => {
 
   const handleSave = async () => {
     const values = await form.validateFields();
-    
+
     // Split values back into their respective configs
     const hotkeyValues = { toggleWindow: values.toggleWindow };
-    const appValues = { 
+    const appValues = {
       runInBackground: values.runInBackground,
-      autoStart: values.autoStart 
+      autoStart: values.autoStart,
     };
 
     await saveHotkeyConfig(hotkeyValues);
     await saveAppConfig(appValues);
-    
+
     await window.electron.system.reloadHotkeys();
     messageApi.success('General settings saved successfully');
   };

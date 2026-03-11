@@ -97,3 +97,4 @@ out/
 # Build output (compiled app and installers)
 dist/
 build/
+src/renderer/assets/extensions/grammarly

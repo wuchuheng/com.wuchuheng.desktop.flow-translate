@@ -103,14 +103,14 @@ export const capturePreviousWindow = (): void => {
  * Call this AFTER hiding the floating window and BEFORE typing.
  */
 export const restorePreviousWindow = (): Promise<void> => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (!lastActiveWindowHandle || lastActiveWindowHandle === '0') {
       resolve();
       return;
     }
 
     logger.info(`Restoring focus to window handle: ${lastActiveWindowHandle}`);
-    
+
     const psScript = `
       Add-Type -TypeDefinition '
         using System;
@@ -124,13 +124,13 @@ export const restorePreviousWindow = (): Promise<void> => {
     `;
 
     const ps = spawn('powershell', ['-NoProfile', '-Command', psScript]);
-    
+
     ps.on('close', () => {
       // Give a tiny buffer for the OS to actually switch the context
       setTimeout(resolve, 100);
     });
-    
-    ps.on('error', (err) => {
+
+    ps.on('error', err => {
       logger.error(`Failed to restore focus: ${err instanceof Error ? err.message : String(err)}`);
       resolve();
     });
@@ -141,21 +141,21 @@ export const restorePreviousWindow = (): Promise<void> => {
  * Prepares the target app by deleting the original content (Backspaces).
  */
 export const prepareTargetApp = (count: number): Promise<void> => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (count <= 0) {
       resolve();
       return;
     }
     logger.info(`Sending ${count} backspaces...`);
     const ps = spawn('powershell', [
-      '-NoProfile', 
-      '-Command', 
-      `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('{BACKSPACE ${count}}');`
+      '-NoProfile',
+      '-Command',
+      `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('{BACKSPACE ${count}}');`,
     ]);
     ps.on('close', () => resolve());
-    ps.on('error', (err) => {
+    ps.on('error', err => {
       logger.error(`Error sending backspaces: ${err instanceof Error ? err.message : String(err)}`);
-      resolve(); 
+      resolve();
     });
   });
 };
@@ -164,7 +164,7 @@ export const prepareTargetApp = (count: number): Promise<void> => {
  * Pastes text using the clipboard and Ctrl+V.
  */
 export const pasteText = (text: string): Promise<void> => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (!text) {
       resolve();
       return;
@@ -176,7 +176,7 @@ export const pasteText = (text: string): Promise<void> => {
     // 1. Set Clipboard
     // 2. Send Ctrl+V
     const escapedText = text.replace(/'/g, "''");
-    
+
     const psScript = `
       Add-Type -AssemblyName System.Windows.Forms;
       [System.Windows.Forms.Clipboard]::SetText('${escapedText}');
@@ -185,9 +185,9 @@ export const pasteText = (text: string): Promise<void> => {
     `;
 
     const ps = spawn('powershell', ['-NoProfile', '-Command', psScript]);
-    
+
     ps.on('close', () => resolve());
-    ps.on('error', (err) => {
+    ps.on('error', err => {
       logger.error(`Error pasting text: ${err instanceof Error ? err.message : String(err)}`);
       resolve();
     });

@@ -21,12 +21,12 @@ const setState = (partial: Partial<UpdateState>) => {
 
 const getUpdateUrl = (): string => {
   // Use environment variables (injected at build time via electron-vite define)
-  const baseUrl = app.isPackaged
-    ? process.env.PROD_UPDATE_SERVER_URL
-    : process.env.DEV_UPDATE_SERVER_URL;
+  const baseUrl = app.isPackaged ? process.env.PROD_UPDATE_SERVER_URL : process.env.DEV_UPDATE_SERVER_URL;
 
   if (!baseUrl) {
-    throw new Error('Update server URL is not configured. Please set DEV_UPDATE_SERVER_URL or PROD_UPDATE_SERVER_URL in .env');
+    throw new Error(
+      'Update server URL is not configured. Please set DEV_UPDATE_SERVER_URL or PROD_UPDATE_SERVER_URL in .env'
+    );
   }
 
   return new URL(`${baseUrl}/${process.platform}/${process.arch}`).toString();
@@ -41,7 +41,7 @@ const setupListeners = () => {
   autoUpdater.on('update-available', (info: UpdateInfo) => {
     setState({ status: 'downloading', info, error: null });
     logger.info(`Update v${info.version} found. Downloading...`);
-    autoUpdater.downloadUpdate().catch((err) => {
+    autoUpdater.downloadUpdate().catch(err => {
       setState({ status: 'error', error: err.message });
       logger.error(`Download failed: ${err.message}`);
     });
@@ -52,7 +52,7 @@ const setupListeners = () => {
     logger.info('No update available.');
   });
 
-  autoUpdater.on('download-progress', (progress) => {
+  autoUpdater.on('download-progress', progress => {
     state = {
       ...state,
       progress: {
@@ -71,7 +71,7 @@ const setupListeners = () => {
       progress: { percent: 100, transferred: 0, total: 0 },
     });
     logger.info(`Update v${info.version} downloaded.`);
-    showUpdateDialog(info).catch((err) => {
+    showUpdateDialog(info).catch(err => {
       logger.error(`Failed to show update dialog: ${err.message}`);
     });
   });

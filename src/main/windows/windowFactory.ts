@@ -1,10 +1,12 @@
-import { BrowserWindow, dialog, app } from 'electron';
+import { BrowserWindow, dialog, app, Session, session, webContents } from 'electron';
+import { ElectronChromeExtensions } from 'electron-chrome-extensions';
 import net from 'node:net';
 import * as path from 'path';
 import { logger } from '../utils/logger';
 import { getDataSource } from '../database/data-source';
 import { Config } from '../database/entities/config.entity';
 import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
+import { getExtensionPath } from '../config/config';
 
 const getMainWindowEntry = () => {
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -21,6 +23,56 @@ declare global {
   // eslint-disable-next-line no-var
   var isForceQuitting: boolean | undefined;
 }
+
+/**
+ * The persistent named session shared by the Grammarly extension and all windows.
+ */
+export const GRAMMARLY_SESSION_PARTITION = 'persist:grammarly';
+
+export const getGrammarlySession = (): Session => {
+  return session.fromPartition(GRAMMARLY_SESSION_PARTITION);
+};
+
+let extensionsInstance: ElectronChromeExtensions | null = null;
+
+export const getExtensions = (): ElectronChromeExtensions => {
+  if (extensionsInstance) return extensionsInstance;
+  
+  const grammarlySession = getGrammarlySession();
+  extensionsInstance = new ElectronChromeExtensions({
+    license: 'GPL-3.0',
+    session: grammarlySession,
+    // Called when Grammarly's service worker invokes chrome.tabs.create().
+    createTab: async (details) => {
+      logger.info(`chrome.tabs.create intercepted: ${details.url}`);
+      const tabWindow = new BrowserWindow({
+        width: 520,
+        height: 700,
+        alwaysOnTop: true,
+        autoHideMenuBar: true,
+        title: details.title || 'Grammarly',
+        webPreferences: {
+          session: grammarlySession, // same session → shared cookies
+          nodeIntegration: false,
+          contextIsolation: true,
+          sandbox: true,
+        },
+      });
+
+      if (details.url) tabWindow.loadURL(details.url);
+
+      return [tabWindow.webContents, tabWindow];
+    },
+    selectTab: (webContents, browserWindow) => {
+      // Intentionally do nothing.
+      // ECE maps extensions' "tabs" to full Electron BrowserWindows.
+      // If we call browserWindow.focus() here, Grammarly's background scripts 
+      // polling or selecting tabs will aggressively yank desktop focus and steal 
+      // the screen from the user. We want the user to manage their own window focus.
+    },
+  });
+  return extensionsInstance;
+};
 
 const parseEntryPort = (entryUrl: string) => {
   try {
@@ -104,6 +156,11 @@ export const createWindow = async (): Promise<BrowserWindow> => {
   }
 
   try {
+    // Both windows use the grammarly session so extensions work everywhere
+    const grammarlySession = getGrammarlySession();
+    const extensions = getExtensions();
+    await loadExtension(grammarlySession);
+
     // Create the browser window.
     logger.info(`Creating BrowserWindow with preload path: ${preloadEntry}`);
     logger.info(`Main window entry: ${mainWindowEntry}`);
@@ -111,12 +168,15 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     const mainWindow = new BrowserWindow({
       height: 800 * 1.5,
       width: 1200 * 1.5,
-      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
+      icon: app.isPackaged
+        ? path.join(process.resourcesPath, 'icon.ico')
+        : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
+        session: grammarlySession, // attach main window to extension session
       },
       // Use frameless window for custom title bar
       frame: false,
@@ -125,6 +185,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       backgroundColor: '#1e1e2e',
     });
 
+    extensions.addTab(mainWindow.webContents, mainWindow);
+
     logger.info('BrowserWindow created successfully');
 
     // Hide the menu bar completely
@@ -132,18 +194,16 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     logger.info('Menu bar visibility set to false');
 
     // Pipe renderer console messages to main process logger
-    mainWindow.webContents.on('console-message', (event, details) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mainWindow.webContents.on('console-message', event => {
+      const { level, message, sourceId, lineNumber: line } = event;
       // Filter out DevTools internal errors (Autofill is not available in Electron)
-      if (details.sourceId?.includes('devtools://')) return;
+      if (sourceId?.includes('devtools://')) return;
 
-      const level = details.level;
-      const message = details.message;
-      const sourceId = details.sourceId;
-      const line = details.lineNumber;
-
-      if (level === 3) {
+      const lvl = level as unknown as number;
+      if (lvl === 3) {
         logger.error(`[RENDERER ERROR] ${message} (${sourceId}:${line})`);
-      } else if (level === 2) {
+      } else if (lvl === 2) {
         logger.warn(`[RENDERER WARN] ${message} (${sourceId}:${line})`);
       } else {
         logger.info(`[RENDERER] ${message} (${sourceId}:${line})`);
@@ -246,17 +306,22 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
 
   const mainWindowEntry = getMainWindowEntry();
   const preloadEntry = getPreloadEntry();
+  const grammarlySession = getGrammarlySession();
+  const extensions = getExtensions();
+
+  // Load the extension into the persistent session (after extensions API is ready)
+  await loadExtension(grammarlySession);
 
   try {
     const floatingWindow = new BrowserWindow({
       alwaysOnTop: true,
       transparent: true,
-      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
-
+      icon: app.isPackaged
+        ? path.join(process.resourcesPath, 'icon.ico')
+        : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
       resizable: false,
       skipTaskbar: true,
       show: false,
-
       width: 600,
       height: 400,
       title: 'FlowTranslatePopup',
@@ -265,11 +330,15 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
+        session: grammarlySession,
       },
-      // Use frameless window for custom title bar
       frame: false,
       titleBarStyle: 'hidden',
     });
+
+    // Register the floating window as a tab so extension APIs like
+    // chrome.tabs.query() return it and content scripts attach to it.
+    extensions.addTab(floatingWindow.webContents, floatingWindow);
 
     floatingWindow.loadURL(`${mainWindowEntry}#/flow-translate`);
 
@@ -277,8 +346,11 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
       floatingWindow.hide();
     });
 
-    // Remove the title bar and menu for the floating window
     floatingWindow.setMenu(null);
+
+    if (process.env.NODE_ENV === 'development') {
+      floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    }
 
     return floatingWindow;
   } catch (error) {
@@ -286,6 +358,7 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
     throw error;
   }
 };
+
 
 /**
  * Creates a dedicated, non-resizable dialog window for the software update process.
@@ -305,7 +378,9 @@ export const createUpdateWindow = async (): Promise<BrowserWindow> => {
       maximizable: false,
       fullscreenable: false,
       alwaysOnTop: true,
-      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
+      icon: app.isPackaged
+        ? path.join(process.resourcesPath, 'icon.ico')
+        : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,
@@ -333,5 +408,48 @@ export const createUpdateWindow = async (): Promise<BrowserWindow> => {
   } catch (error) {
     logger.error(`Error creating update window: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
+  }
+};
+
+
+/**
+ * Opens a Grammarly sign-in window in the persist:grammarly session.
+ * Since electron-chrome-extensions implements chrome.tabs.create at the IPC level,
+ * Grammarly's service worker will call it automatically when the user clicks
+ * "Log in" in its popup. This manual button is a fallback convenience.
+ */
+export const openGrammarlyAuthWindow = (targetUrl = 'https://www.grammarly.com/signin'): BrowserWindow => {
+  logger.info(`Opening Grammarly window for ${targetUrl}`);
+  const grammarlySession = getGrammarlySession();
+
+  const authWindow = new BrowserWindow({
+    width: 520,
+    height: 680,
+    alwaysOnTop: true,
+    title: 'Grammarly',
+    autoHideMenuBar: true,
+    webPreferences: {
+      session: grammarlySession,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+    },
+  });
+
+  authWindow.loadURL(targetUrl);
+
+  return authWindow;
+};
+
+export const loadExtension = async (browserSession: Session) => {
+  const extensionPath = getExtensionPath();
+  try {
+    const ext = await browserSession.extensions.loadExtension(extensionPath, {
+      allowFileAccess: true,
+    });
+    logger.info(`Extension loaded: ${ext.name} | Version: ${ext.version} | ID: ${ext.id}`);
+    
+  } catch (err) {
+    logger.error(`Failed to load extension from ${extensionPath}: ${err}`);
   }
 };

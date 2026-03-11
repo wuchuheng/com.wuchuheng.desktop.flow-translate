@@ -25,7 +25,7 @@ export const AboutTab: React.FC = () => {
   const { status, info: updateInfo, progress, error, checkForUpdates, installAndRestart } = useUpdateSystem();
 
   useEffect(() => {
-    window.electron.system.getAppInfo().then((res) => {
+    window.electron.system.getAppInfo().then(res => {
       setInfo(res);
       setLoading(false);
     });
@@ -94,7 +94,7 @@ export const AboutTab: React.FC = () => {
             type="primary"
             icon={<CheckCircleOutlined />}
             onClick={handleInstall}
-            className="rounded-full bg-green-500 hover:bg-green-600 border-none"
+            className="rounded-full border-none bg-green-500 hover:bg-green-600"
           >
             Restart & Install v{updateInfo.version}
           </Button>

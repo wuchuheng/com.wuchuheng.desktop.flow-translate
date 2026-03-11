@@ -41,9 +41,7 @@ const startTranslation = async (payload: { text: string; backspaceCount: number 
 
     let thinkingParams = {};
     if (currentProvider?.thinkingConfig) {
-      thinkingParams = enableThinking 
-        ? currentProvider.thinkingConfig.enable 
-        : currentProvider.thinkingConfig.disable;
+      thinkingParams = enableThinking ? currentProvider.thinkingConfig.enable : currentProvider.thinkingConfig.disable;
     }
 
     const promptTemplate = systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;

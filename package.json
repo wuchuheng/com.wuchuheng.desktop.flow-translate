@@ -1,7 +1,7 @@
 {
   "name": "flow-translate",
   "productName": "Flow Translate",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI-powered minimalist translation tool",
   "main": "./out/main/index.js",
   "scripts": {
@@ -16,8 +16,9 @@
     "build": "npm run manage build",
     "package": "npm run manage package",
     "release": "tsx scripts/release-update.ts",
-    "lint": "eslint --ext .ts,.tsx .",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "lint": "npm run format && eslint --ext .ts,.tsx . && npm run typecheck",
+    "typecheck": "tsc --noEmit --incremental",
+    "format": "prettier --write --log-level=warn \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
     "gen:logo": "node scripts/gen-logo.js",
     "release-update": "tsx scripts/release-update.ts"
   },
@@ -36,8 +37,8 @@
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "@types/semver": "^7.7.1",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "@vitejs/plugin-react": "^5.1.4",
     "antd": "^5.25.4",
     "autoprefixer": "^10.4.21",
@@ -73,6 +74,7 @@
   "dependencies": {
     "better-sqlite3": "^11.10.0",
     "chalk": "^4.1.2",
+    "electron-chrome-extensions": "^4.9.0",
     "electron-updater": "^6.7.3",
     "react-markdown": "^10.1.0",
     "semver": "^7.7.4",
