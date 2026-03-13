@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import dayjs from 'dayjs';
-import { app } from 'electron';
 import fs from 'fs';
 import path from 'node:path';
+import { getPaths } from './path.util';
 type Log = {
   level: string;
   source: string;
@@ -11,9 +11,7 @@ type Log = {
 };
 
 const getLogDir = () => {
-  const appAppPath = app.isPackaged ? './' : app.getAppPath();
-
-  const logDir = path.join(appAppPath, 'logs', dayjs().format('YYYY-MM-DD'));
+  const logDir = path.join(getPaths().logs, dayjs().format('YYYY-MM-DD'));
 
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });

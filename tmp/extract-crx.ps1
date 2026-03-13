@@ -4,7 +4,7 @@ param(
 
 $crxPath = Join-Path $ProjectRoot "src\renderer\assets\extensions\grammarly\grammarly.crx"
 $extBaseDir = Join-Path $ProjectRoot "src\renderer\assets\extensions\grammarly"
-$oldFolder = Join-Path $extBaseDir "14.1275.0_0"
+$oldFolder = Join-Path $extBaseDir "14.1276.0_0"
 
 # Read CRX bytes
 $crxBytes = [System.IO.File]::ReadAllBytes($crxPath)

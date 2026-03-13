@@ -1,11 +1,9 @@
 import { DataSource } from 'typeorm';
-import packageJson from '../../../package.json';
 import { logger } from '../utils/logger';
 import { Welcome } from './entities/welcome.entity';
 import { Config } from './entities/config.entity';
 import { seedDatabase } from './seed';
-import { app } from 'electron';
-import path from 'path';
+import { getPaths } from '../utils/path.util';
 
 // Use require to ensure we get the constructor, avoiding ESM interop issues
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -17,7 +15,7 @@ const getDatabasePath = () => {
     return 'dev.sqlite';
   }
   // In production, database must be in userData to be writable
-  return path.join(app.getPath('userData'), `${packageJson.name}.sqlite`);
+  return getPaths().database;
 };
 
 let db: DataSource;

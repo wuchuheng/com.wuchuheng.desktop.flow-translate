@@ -59,16 +59,15 @@ export const getExtensions = (): ElectronChromeExtensions => {
         },
       });
 
+      // Always open DevTools for extension tabs
+      tabWindow.webContents.openDevTools({ mode: 'detach' });
+
       if (details.url) tabWindow.loadURL(details.url);
 
       return [tabWindow.webContents, tabWindow];
     },
     selectTab: () => {
       // Intentionally do nothing.
-      // ECE maps extensions' "tabs" to full Electron BrowserWindows.
-      // If we call browserWindow.focus() here, Grammarly's background scripts
-      // polling or selecting tabs will aggressively yank desktop focus and steal
-      // the screen from the user. We want the user to manage their own window focus.
     },
   });
   return extensionsInstance;
@@ -166,8 +165,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     logger.info(`Main window entry: ${mainWindowEntry}`);
 
     const mainWindow = new BrowserWindow({
-      height: 800 * 1.5,
-      width: 1200 * 1.5,
+      height: 1200,
+      width: 1800,
       icon: app.isPackaged
         ? path.join(process.resourcesPath, 'icon.ico')
         : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
@@ -185,117 +184,20 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       backgroundColor: '#1e1e2e',
     });
 
+    // Auto-open DevTools
+    mainWindow.webContents.openDevTools();
+
     extensions.addTab(mainWindow.webContents, mainWindow);
 
     logger.info('BrowserWindow created successfully');
 
     // Hide the menu bar completely
     mainWindow.setMenuBarVisibility(false);
-    logger.info('Menu bar visibility set to false');
-
-    // Pipe renderer console messages to main process logger
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mainWindow.webContents.on('console-message', event => {
-      const { level, message, sourceId, lineNumber: line } = event;
-      // Filter out DevTools internal errors (Autofill is not available in Electron)
-      if (sourceId?.includes('devtools://')) return;
-
-      const lvl = level as unknown as number;
-      if (lvl === 3) {
-        logger.error(`[RENDERER ERROR] ${message} (${sourceId}:${line})`);
-      } else if (lvl === 2) {
-        logger.warn(`[RENDERER WARN] ${message} (${sourceId}:${line})`);
-      } else {
-        logger.info(`[RENDERER] ${message} (${sourceId}:${line})`);
-      }
-    });
-
-    // Verify contentView is created
-    logger.info(`Main window contentView exists: ${!!mainWindow.contentView}`);
-
-    // Log some window properties for debugging
-    logger.info(`Window bounds: ${JSON.stringify(mainWindow.getBounds())}`);
-    logger.info(`Window is visible: ${mainWindow.isVisible()}`);
-    logger.info(`Window is minimized: ${mainWindow.isMinimized()}`);
-    logger.info(`Window is maximized: ${mainWindow.isMaximized()}`);
-    logger.info(`Window is fullscreen: ${mainWindow.isFullScreen()}`);
-
-    // and load the index.html of the app.
     mainWindow.loadURL(mainWindowEntry);
-    logger.info(`Loading URL: ${mainWindowEntry}`);
-
-    // Give a clearer hint when the renderer fails to load (often a dev-server port clash)
-    if (entryMeta?.isHttp && entryMeta.isLocalhost) {
-      mainWindow.webContents.on(
-        'did-fail-load',
-        async (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
-          if (!isMainFrame) return;
-
-          const reachable = await isPortReachable(entryMeta.host, entryMeta.port);
-          const base = `${errorCode}: ${errorDescription} while loading ${validatedURL || mainWindowEntry}`;
-          const hint = reachable
-            ? `Port ${entryMeta.port} is already in use by another process. Stop that process or set WEBPACK_DEV_SERVER_PORT to a free port.`
-            : `Renderer dev server is not reachable at ${entryMeta.description}. It may have failed to start.`;
-          const message = `${base}.\n${hint}`;
-
-          logger.error(message);
-          dialog.showErrorBox('Renderer failed to load', message);
-        }
-      );
-    }
-
-    // Open the DevTools in development mode only
-    if (process.env.NODE_ENV === 'development') {
-      logger.info('Opening DevTools in development mode');
-      mainWindow.webContents.openDevTools();
-    }
-
-    // Log when the window is ready to show
-    mainWindow.once('ready-to-show', () => {
-      logger.info('Main window is ready to show');
-    });
-
-    // Log window lifecycle events
-    mainWindow.on('show', () => {
-      logger.info('Main window shown');
-    });
-
-    mainWindow.on('hide', () => {
-      logger.info('Main window hidden');
-    });
-
-    mainWindow.on('focus', () => {
-      logger.info('Main window focused');
-    });
-
-    mainWindow.on('blur', () => {
-      logger.info('Main window blurred');
-    });
-
-    mainWindow.on('close', async event => {
-      if (!global.isForceQuitting) {
-        try {
-          const repo = getDataSource().getRepository(Config);
-          const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.APP });
-          const appConfig = (configEntity?.value as AppConfig) || DEFAULT_APP_CONFIG;
-
-          if (appConfig.runInBackground) {
-            event.preventDefault();
-            mainWindow.hide();
-            logger.info('Main window hidden instead of closed');
-            return;
-          }
-        } catch (error) {
-          logger.error('Error checking runInBackground config:', error);
-        }
-      }
-      logger.info('Main window closing');
-    });
 
     return mainWindow;
   } catch (error) {
     logger.error(`Error creating main window: ${error instanceof Error ? error.message : String(error)}`);
-    logger.error(`Error stack: ${error instanceof Error ? error.stack : 'No stack available'}`);
     throw error;
   }
 };
@@ -307,9 +209,6 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
   const preloadEntry = getPreloadEntry();
   const grammarlySession = getGrammarlySession();
   const extensions = getExtensions();
-
-  // Load the extension into the persistent session (after extensions API is ready)
-  await loadExtension(grammarlySession);
 
   try {
     const floatingWindow = new BrowserWindow({
@@ -323,7 +222,6 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
       show: false,
       width: 600,
       height: 400,
-      title: 'FlowTranslatePopup',
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,
@@ -335,6 +233,9 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
       titleBarStyle: 'hidden',
     });
 
+    // Open DevTools for floating window
+    floatingWindow.webContents.openDevTools({ mode: 'detach' });
+
     // Register the floating window as a tab so extension APIs like
     // chrome.tabs.query() return it and content scripts attach to it.
     extensions.addTab(floatingWindow.webContents, floatingWindow);
@@ -344,12 +245,6 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
     floatingWindow.on('blur', () => {
       floatingWindow.hide();
     });
-
-    floatingWindow.setMenu(null);
-
-    if (process.env.NODE_ENV === 'development') {
-      floatingWindow.webContents.openDevTools({ mode: 'detach' });
-    }
 
     return floatingWindow;
   } catch (error) {
@@ -362,58 +257,36 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
  * Creates a dedicated, non-resizable dialog window for the software update process.
  */
 export const createUpdateWindow = async (): Promise<BrowserWindow> => {
-  logger.info('Creating update window');
-
   const mainWindowEntry = getMainWindowEntry();
   const preloadEntry = getPreloadEntry();
 
-  try {
-    const updateWindow = new BrowserWindow({
-      width: 450,
-      height: 600,
-      resizable: false,
-      minimizable: false,
-      maximizable: false,
-      fullscreenable: false,
-      alwaysOnTop: true,
-      icon: app.isPackaged
-        ? path.join(process.resourcesPath, 'icon.ico')
-        : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
-      webPreferences: {
-        preload: preloadEntry,
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: false,
-      },
-      frame: false,
-      titleBarStyle: 'hidden',
-      backgroundColor: '#1e1e2e',
-      show: false,
-    });
+  const updateWindow = new BrowserWindow({
+    width: 450,
+    height: 600,
+    resizable: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      preload: preloadEntry,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+    frame: false,
+    titleBarStyle: 'hidden',
+    backgroundColor: '#1e1e2e',
+    show: false,
+  });
 
-    // Navigate to the specific update-dialog route
-    updateWindow.loadURL(`${mainWindowEntry}#/update-dialog`);
+  // Auto-open DevTools
+  updateWindow.webContents.openDevTools({ mode: 'detach' });
 
-    updateWindow.once('ready-to-show', () => {
-      updateWindow.show();
-      // Optional: Open DevTools in dev mode for this window
-      // updateWindow.webContents.openDevTools({ mode: 'detach' });
-    });
-
-    updateWindow.setMenu(null);
-
-    return updateWindow;
-  } catch (error) {
-    logger.error(`Error creating update window: ${error instanceof Error ? error.message : String(error)}`);
-    throw error;
-  }
+  updateWindow.loadURL(`${mainWindowEntry}#/update-dialog`);
+  updateWindow.once('ready-to-show', () => updateWindow.show());
+  return updateWindow;
 };
 
 /**
  * Opens a Grammarly sign-in window in the persist:grammarly session.
- * Since electron-chrome-extensions implements chrome.tabs.create at the IPC level,
- * Grammarly's service worker will call it automatically when the user clicks
- * "Log in" in its popup. This manual button is a fallback convenience.
  */
 export const openGrammarlyAuthWindow = (targetUrl = 'https://www.grammarly.com/signin'): BrowserWindow => {
   logger.info(`Opening Grammarly window for ${targetUrl}`);
@@ -432,6 +305,9 @@ export const openGrammarlyAuthWindow = (targetUrl = 'https://www.grammarly.com/s
       sandbox: true,
     },
   });
+
+  // Always open DevTools
+  authWindow.webContents.openDevTools({ mode: 'detach' });
 
   authWindow.loadURL(targetUrl);
 

@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
             /^mongodb/,
             /^mssql/,
             /^typeorm-aurora-data-api-driver/,
-            /^typeorm/
+            /^typeorm/,
           ],
         },
       },

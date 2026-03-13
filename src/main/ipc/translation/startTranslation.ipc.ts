@@ -8,6 +8,7 @@ import OpenAI from 'openai';
 import { AI_PROVIDER_CATALOG, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
 import { Stream } from 'openai/streaming';
 import { ChatCompletionChunk, ChatCompletionCreateParams } from 'openai/resources/chat/completions';
+import { addThinkingArgument, cleanModelName } from '@/shared/ai-helper';
 
 export const onTranslateChunk = createEvent<{ chunk: string; done: boolean; isError?: boolean }>();
 
@@ -32,17 +33,13 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
       throw new Error(`Base URL not found for provider: ${providerId}`);
     }
 
-    logger.info(`Starting translation with model: ${model}`);
+    const cleanedModel = cleanModelName(model || 'gpt-3.5-turbo');
+    logger.info(`Starting translation with model: ${cleanedModel} (original: ${model})`);
 
     const client = new OpenAI({
       apiKey,
       baseURL: baseUrl,
     });
-
-    let thinkingParams = {};
-    if (currentProvider?.thinkingConfig) {
-      thinkingParams = enableThinking ? currentProvider.thinkingConfig.enable : currentProvider.thinkingConfig.disable;
-    }
 
     const promptTemplate = systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;
     let messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -57,22 +54,43 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
       ];
     }
 
-    const params: ChatCompletionCreateParams = {
+    let requestConfig: Record<string, unknown> = {
       model: model || 'gpt-3.5-turbo',
       messages,
       stream: true,
-      ...thinkingParams,
-    } as ChatCompletionCreateParams;
+      stream_options: { include_usage: true },
+    };
 
-    const stream = (await client.chat.completions.create(params)) as Stream<ChatCompletionChunk>;
+    requestConfig = addThinkingArgument(requestConfig, model, providerId, !!enableThinking);
+    logger.info(`[AI Request Config]: ${JSON.stringify(requestConfig, null, 2)}`);
+
+    const stream = (await client.chat.completions.create(
+      requestConfig as unknown as ChatCompletionCreateParams
+    )) as Stream<ChatCompletionChunk>;
 
     let fullTranslation = '';
+    let totalUsage: {
+      prompt_tokens: number;
+      completion_tokens: number;
+      total_tokens: number;
+    } | null = null;
+
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
       if (content) {
         fullTranslation += content;
         onTranslateChunk({ chunk: content, done: false });
       }
+
+      if (chunk.usage) {
+        totalUsage = chunk.usage;
+      }
+    }
+
+    if (totalUsage) {
+      logger.info(
+        `[AI Usage Summary]: Prompt: ${totalUsage.prompt_tokens}, Completion: ${totalUsage.completion_tokens}, Total: ${totalUsage.total_tokens}`
+      );
     }
 
     onTranslateChunk({ chunk: '', done: true });

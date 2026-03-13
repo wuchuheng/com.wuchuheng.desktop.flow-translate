@@ -8,15 +8,32 @@ import { logger } from '../utils/logger';
  * In production, it should be in the resources folder.
  */
 export const getExtensionPath = (): string => {
-  // In the new template structure, we'll aim for a predictable location
-  const packedExtensionPath = path.join(process.resourcesPath, 'extensions/grammarly/14.1276.0_0');
-  const unpackedExtensionPath = path.resolve(app.getAppPath(), 'src/renderer/assets/extensions/grammarly/14.1276.0_0');
+  // Try versioned paths first, falling back to a direct path if necessary
+  const version = '14.1276.0_0';
 
-  const extensionPath = app.isPackaged ? packedExtensionPath : unpackedExtensionPath;
+  // In production, electron-builder puts extraResources into process.resourcesPath
+  // If we asarUnpack them, they are in app.asar.unpacked/extensions/...
+  const packedPath = path.join(process.resourcesPath, `extensions/grammarly/${version}`);
+  const unpackedPath = path.join(process.resourcesPath, `app.asar.unpacked/extensions/grammarly/${version}`);
+
+  // In development, they are in the source tree
+  const devPath = path.resolve(app.getAppPath(), `src/renderer/assets/extensions/grammarly/${version}`);
+
+  let extensionPath = devPath;
+
+  if (app.isPackaged) {
+    if (fs.existsSync(unpackedPath)) {
+      extensionPath = unpackedPath;
+    } else if (fs.existsSync(packedPath)) {
+      extensionPath = packedPath;
+    }
+  }
 
   if (!fs.existsSync(extensionPath)) {
     logger.warn(`Extension path: ${extensionPath} not found. Some scraper features may not work.`);
-    // We don't throw here to allow the app to boot even if extension is missing during dev
+  } else {
+    logger.info(`Resolved extension path: ${extensionPath}`);
   }
+
   return extensionPath;
 };

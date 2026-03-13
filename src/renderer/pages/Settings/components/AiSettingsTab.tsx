@@ -6,15 +6,12 @@ import type { ChatCompletionCreateParams, ChatCompletionChunk } from 'openai/res
 import { useConfig } from '../../../hooks/useConfig';
 import { useOpenAI } from '../../../hooks/useOpenAI';
 import { AI_PROVIDER_CATALOG, AiConfig, DEFAULT_AI_CONFIG, CONFIG_KEYS } from '@/shared/constants';
+import { addThinkingArgument } from '@/shared/ai-helper';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 // Define custom types to handle non-standard API fields (like 'thinking')
-type CustomChatParams = ChatCompletionCreateParams & {
-  thinking?: { type: 'enabled' | 'disabled' };
-};
-
 type CustomDelta = ChatCompletionChunk.Choice.Delta & {
   reasoning_content?: string;
 };
@@ -66,15 +63,6 @@ export const AiSettingsTab: React.FC = () => {
       const values = await form.validateFields();
       const client = createClient(values);
 
-      // Resolve thinking config
-      const currentProvider = AI_PROVIDER_CATALOG.find(p => p.id === values.providerId);
-      let thinkingParams = {};
-      if (currentProvider?.thinkingConfig) {
-        thinkingParams = values.enableThinking
-          ? currentProvider.thinkingConfig.enable
-          : currentProvider.thinkingConfig.disable;
-      }
-
       const promptTemplate = values.systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;
 
       const newMessages: ChatMessage[] = [...chatMessages];
@@ -93,15 +81,16 @@ export const AiSettingsTab: React.FC = () => {
 
       setChatMessages([...newMessages, { role: 'assistant', content: '' }]);
 
-      const params: CustomChatParams = {
+      let requestConfig: Record<string, unknown> = {
         model: values.model,
         messages: newMessages.map(m => ({ role: m.role, content: m.content })),
         stream: true,
-        ...thinkingParams,
       };
 
+      requestConfig = addThinkingArgument(requestConfig, values.model, values.providerId, !!values.enableThinking);
+
       const stream = (await client.chat.completions.create(
-        params as unknown as ChatCompletionCreateParams
+        requestConfig as unknown as ChatCompletionCreateParams
       )) as Stream<ChatCompletionChunk>;
 
       let fullContent = '';

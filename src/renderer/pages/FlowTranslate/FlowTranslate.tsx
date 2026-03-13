@@ -70,7 +70,7 @@ export const FlowTranslate: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={`font-sans w-full max-h-screen overflow-hidden ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
+      className={`max-h-screen w-full overflow-hidden font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
     >
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -94,26 +94,26 @@ export const FlowTranslate: React.FC = () => {
         }
       `}</style>
       <div
-        className="h-full w-full flex flex-col overflow-hidden rounded-2xl backdrop-blur-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
+        className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
         style={dynamicBgStyle}
       >
-        <div className="flex-1 flex flex-col overflow-hidden relative min-h-0">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           <textarea
             ref={textareaRef}
-            className="w-full min-h-[60px] max-h-full [field-sizing:content] bg-transparent text-lg font-medium leading-relaxed p-4 border-none focus:ring-0 resize-none outline-none overflow-y-auto custom-scrollbar text-inherit placeholder-gray-400 dark:placeholder-white/20"
+            className="custom-scrollbar max-h-full min-h-[60px] w-full resize-none overflow-y-auto border-none bg-transparent p-4 text-lg font-medium leading-relaxed text-inherit placeholder-gray-400 outline-none [field-sizing:content] focus:ring-0 dark:placeholder-white/20"
             placeholder="Ask Flow..."
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             autoFocus
           />
-          
+
           {hasError && translation && (
             <div className="mx-4 mb-2 flex items-center gap-1.5 text-xs font-medium text-red-500/90">
               <span className="font-bold uppercase tracking-wider opacity-70">Error:</span>
               <span className="flex-1 truncate">{translation}</span>
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   resetTranslation();
                 }}
@@ -138,27 +138,37 @@ export const FlowTranslate: React.FC = () => {
                     <span className="ml-0.5 transition-colors hover:text-blue-400">trans, copy & close</span>
                   </div>
                   <div className="flex items-center">
-                    <Key title="Ctrl">Ctrl</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="Enter">Enter</Key>
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="Enter">Enter</Key>
                     <span className="ml-0.5 transition-colors hover:text-blue-400">translate only</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center">
-                    <Key title="Shift">Shift</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="Enter">⏎</Key>
+                    <Key title="Shift">Shift</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="Enter">⏎</Key>
                     <span className="mx-0.5 text-[10px] opacity-40">/</span>
-                    <Key title="Ctrl">^</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="J">J</Key>
+                    <Key title="Ctrl">^</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="J">J</Key>
                     <span className="ml-0.5 transition-colors hover:text-blue-400">new line</span>
                   </div>
                   <div className="flex items-center">
-                    <Key title="Ctrl">Ctrl</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="D">D</Key>
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="D">D</Key>
                     <span className="ml-0.5 transition-colors hover:text-blue-400">clear content</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center">
-                    <Key title="Ctrl">Ctrl</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="C">C</Key>
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="C">C</Key>
                     <span className="ml-0.5 transition-colors hover:text-blue-400">copy & close</span>
                   </div>
                   <div
@@ -181,7 +191,7 @@ export const FlowTranslate: React.FC = () => {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75 dark:bg-blue-400"></span>
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500"></span>
                 </span>
-                <span className="text-blue-500 font-bold uppercase tracking-widest text-[10px]">Processing...</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Processing...</span>
               </div>
             )}
           </div>

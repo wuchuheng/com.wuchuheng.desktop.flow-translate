@@ -24,7 +24,7 @@ if (process.platform === 'win32') {
   try {
     childProcess.execSync('chcp 65001', { stdio: 'ignore' });
   } catch {
-    // Fail silently if chcp is not available
+    // Fail silently
   }
 }
 
@@ -52,9 +52,6 @@ app.on('web-contents-created', (_event, contents) => {
     return;
   }
 
-  // Navigation guard: only intercept when the webContents is showing OUR OWN app pages
-  // (localhost dev server or file:// in production). External pages (e.g. grammarly.com
-  // auth windows created by the extension's chrome.tabs.create) navigate freely.
   const isOurAppPage = () => {
     const url = contents.getURL();
     return url.includes('localhost') || url.startsWith('file://');
@@ -148,7 +145,8 @@ export const recreateMainWindow = async () => {
 
 export const registerGlobalShortcut = async () => {
   try {
-    const repo = getDataSource().getRepository(Config);
+    const ds = getDataSource();
+    const repo = ds.getRepository(Config);
     const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.HOTKEYS });
     const shortcut = (configEntity?.value as { toggleWindow?: string })?.toggleWindow || 'CommandOrControl+Alt+T';
 

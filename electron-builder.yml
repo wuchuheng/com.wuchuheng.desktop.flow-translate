@@ -16,8 +16,8 @@ extraResources:
     to: app-update.yml
   - from: src/renderer/assets/genLogo/icon.ico
     to: icon.ico
-  - from: src/renderer/assets/extensions/grammarly/14.1275.0_0
-    to: extensions/grammarly/14.1275.0_0
+  - from: src/renderer/assets/extensions/grammarly
+    to: extensions/grammarly
 
 win:
   target:
@@ -29,6 +29,7 @@ win:
 asar: true
 asarUnpack:
   - '**/node_modules/better-sqlite3/**/*'
+  - '**/extensions/grammarly/**/*'
 
 nsis:
   oneClick: true
