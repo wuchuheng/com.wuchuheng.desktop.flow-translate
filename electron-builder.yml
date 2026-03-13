@@ -10,14 +10,14 @@ files:
   - node_modules/better-sqlite3/**/*
   - node_modules/bindings/**/*
   - node_modules/file-uri-to-path/**/*
+  # Include extensions in ASAR to be unpacked correctly
+  - src/renderer/assets/extensions/grammarly/**/*
 
 extraResources:
   - from: src/main/app-update.yml
     to: app-update.yml
   - from: src/renderer/assets/genLogo/icon.ico
     to: icon.ico
-  - from: src/renderer/assets/extensions/grammarly
-    to: extensions/grammarly
 
 win:
   target:
@@ -29,7 +29,8 @@ win:
 asar: true
 asarUnpack:
   - '**/node_modules/better-sqlite3/**/*'
-  - '**/extensions/grammarly/**/*'
+  # Unpack extensions to bypass ASAR injection limits
+  - '**/src/renderer/assets/extensions/grammarly/**/*'
 
 nsis:
   oneClick: true

@@ -59,8 +59,9 @@ export const getExtensions = (): ElectronChromeExtensions => {
         },
       });
 
-      // Always open DevTools for extension tabs
-      tabWindow.webContents.openDevTools({ mode: 'detach' });
+      if (!app.isPackaged) {
+        tabWindow.webContents.openDevTools({ mode: 'detach' });
+      }
 
       if (details.url) tabWindow.loadURL(details.url);
 
@@ -187,7 +188,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     // Auto-open DevTools
     mainWindow.webContents.openDevTools();
 
-    // extensions.addTab(mainWindow.webContents, mainWindow);
+    extensions.addTab(mainWindow.webContents, mainWindow);
 
     logger.info('BrowserWindow created successfully');
 
