@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, Select, Switch, Button, AutoComplete, Spin, message, Tooltip } from 'antd';
-import { InfoCircleOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, SendOutlined, LoadingOutlined, UserOutlined } from '@ant-design/icons';
 import { Stream } from 'openai/streaming';
 import type { ChatCompletionCreateParams, ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { useConfig } from '../../../hooks/useConfig';
@@ -141,6 +141,10 @@ export const AiSettingsTab: React.FC = () => {
     }
   };
 
+  const handleManualLogin = () => {
+    window.electron.grammarly.openAuth();
+  };
+
   const selectedProviderId = Form.useWatch('providerId', form);
   const enableThinking = Form.useWatch('enableThinking', form);
 
@@ -151,9 +155,14 @@ export const AiSettingsTab: React.FC = () => {
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-[#1e1e2e] lg:col-span-7">
         <div className="flex items-center justify-between border-b bg-gray-50/50 p-4 dark:border-white/5 dark:bg-white/5">
           <h3 className="m-0 font-semibold text-gray-700 dark:text-gray-200">Provider Configuration</h3>
-          <Button type="primary" onClick={handleSave}>
-            Save Changes
-          </Button>
+          <div className="flex gap-2">
+            <Button icon={<UserOutlined />} onClick={handleManualLogin}>
+              Grammarly Login
+            </Button>
+            <Button type="primary" onClick={handleSave}>
+              Save Changes
+            </Button>
+          </div>
         </div>
 
         <div className="custom-scrollbar flex-1 overflow-y-auto p-6">

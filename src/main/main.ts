@@ -12,6 +12,8 @@ import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '../shared/constants'
 import { createTray } from './utils/tray-helper';
 import { initUpdateService, checkForUpdates, handleAppQuitUpdate } from './services/update.service';
 import { registerBootTask, runBootTasks } from './services/bootload.service';
+import { getBaseDir } from './utils/path.util';
+import path from 'path';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -29,6 +31,7 @@ if (process.platform === 'win32') {
 }
 
 dotenv.config();
+app.setPath('userData', path.join(getBaseDir(), 'system'));
 
 // Add command line switches for better extension support
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
