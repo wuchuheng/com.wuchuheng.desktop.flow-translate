@@ -187,7 +187,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     // Auto-open DevTools
     mainWindow.webContents.openDevTools();
 
-    extensions.addTab(mainWindow.webContents, mainWindow);
+    // extensions.addTab(mainWindow.webContents, mainWindow);
 
     logger.info('BrowserWindow created successfully');
 
@@ -238,7 +238,7 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
 
     // Register the floating window as a tab so extension APIs like
     // chrome.tabs.query() return it and content scripts attach to it.
-    extensions.addTab(floatingWindow.webContents, floatingWindow);
+    // extensions.addTab(floatingWindow.webContents, floatingWindow);
 
     floatingWindow.loadURL(`${mainWindowEntry}#/flow-translate`);
 

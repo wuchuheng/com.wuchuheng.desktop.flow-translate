@@ -9,11 +9,9 @@ import { MainLayout } from './layout/MainLayout';
 const root = ReactDOM.createRoot(document.getElementById('app') as HTMLElement);
 
 root.render(
-  <React.StrictMode>
-    <HashRouter>
-      <MainLayout>
-        <AppRoutes />
-      </MainLayout>
-    </HashRouter>
-  </React.StrictMode>
+  <HashRouter>
+    <MainLayout>
+      <AppRoutes />
+    </MainLayout>
+  </HashRouter>
 );
