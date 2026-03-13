@@ -11,8 +11,8 @@ import { ChatCompletionChunk, ChatCompletionCreateParams } from 'openai/resource
 
 export const onTranslateChunk = createEvent<{ chunk: string; done: boolean; isError?: boolean }>();
 
-const startTranslation = async (payload: { text: string; backspaceCount: number }) => {
-  const { text } = payload;
+const startTranslation = async (payload: { text: string; backspaceCount: number; closeAfter?: boolean }) => {
+  const { text, closeAfter = true } = payload;
 
   try {
     const repo = getDataSource().getRepository(Config);
@@ -77,17 +77,19 @@ const startTranslation = async (payload: { text: string; backspaceCount: number 
 
     onTranslateChunk({ chunk: '', done: true });
 
-    const wins = BrowserWindow.getAllWindows();
-    const floatingWindow = wins.find(w => w.webContents.getURL().includes('flow-translate'));
+    if (closeAfter) {
+      const wins = BrowserWindow.getAllWindows();
+      const floatingWindow = wins.find(w => w.webContents.getURL().includes('flow-translate'));
 
-    if (floatingWindow) {
-      floatingWindow.hide();
-    }
+      if (floatingWindow) {
+        floatingWindow.hide();
+      }
 
-    await restorePreviousWindow();
+      await restorePreviousWindow();
 
-    if (fullTranslation) {
-      await pasteText(fullTranslation);
+      if (fullTranslation) {
+        await pasteText(fullTranslation);
+      }
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

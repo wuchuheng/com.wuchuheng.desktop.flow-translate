@@ -1,46 +1,58 @@
-import { useRef } from 'react';
-
-export const useShortcuts = (onSubmit: () => void, onClose: () => void) => {
-  const spacePressTimes = useRef<number[]>([]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+export const useShortcuts = (
+  input: string,
+  setInput: (value: string) => void,
+  onSubmit: (closeWindow?: boolean) => void,
+  onClose: () => void
+) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Escape') {
       e.preventDefault();
       onClose();
       return;
     }
 
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault();
-      if (e.repeat) return;
-      onSubmit();
+    if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+      if (input.trim()) {
+        e.preventDefault();
+        const textToCopy = input;
+        setInput('');
+        onClose();
+        await window.electron.system.copyAndPaste(textToCopy);
+      }
       return;
     }
 
-    if (e.key === ' ') {
-      const now = Date.now();
-      spacePressTimes.current.push(now);
-      if (spacePressTimes.current.length > 3) {
-        spacePressTimes.current.shift();
-      }
+    if (e.key === 'j' && (e.ctrlKey || e.metaKey)) {
+      // Ctrl + J: New line
+      return;
+    }
 
-      if (spacePressTimes.current.length === 3) {
-        const first = spacePressTimes.current[0];
-        const last = spacePressTimes.current[2];
-        if (last - first < 600) {
-          onSubmit();
-          spacePressTimes.current = [];
-        }
+    if (e.key === 'd' && (e.ctrlKey || e.metaKey)) {
+      // Ctrl + D: Clear content
+      e.preventDefault();
+      setInput('');
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        return;
       }
-    } else {
-      spacePressTimes.current = [];
+      e.preventDefault();
+      if (e.repeat) return;
+
+      if (e.ctrlKey || e.metaKey) {
+        // Ctrl + Enter: Only translate, don't close
+        onSubmit(false);
+      } else {
+        // Enter: Translate and close
+        onSubmit(true);
+      }
+      return;
     }
   };
 
   return {
     handleKeyDown,
-    resetSpaceTimes: () => {
-      spacePressTimes.current = [];
-    },
   };
 };

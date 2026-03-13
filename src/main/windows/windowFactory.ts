@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, app, Session, session, webContents } from 'electron';
+import { BrowserWindow, dialog, app, Session, session } from 'electron';
 import { ElectronChromeExtensions } from 'electron-chrome-extensions';
 import net from 'node:net';
 import * as path from 'path';
@@ -37,13 +37,13 @@ let extensionsInstance: ElectronChromeExtensions | null = null;
 
 export const getExtensions = (): ElectronChromeExtensions => {
   if (extensionsInstance) return extensionsInstance;
-  
+
   const grammarlySession = getGrammarlySession();
   extensionsInstance = new ElectronChromeExtensions({
     license: 'GPL-3.0',
     session: grammarlySession,
     // Called when Grammarly's service worker invokes chrome.tabs.create().
-    createTab: async (details) => {
+    createTab: async details => {
       logger.info(`chrome.tabs.create intercepted: ${details.url}`);
       const tabWindow = new BrowserWindow({
         width: 520,
@@ -63,11 +63,11 @@ export const getExtensions = (): ElectronChromeExtensions => {
 
       return [tabWindow.webContents, tabWindow];
     },
-    selectTab: (webContents, browserWindow) => {
+    selectTab: () => {
       // Intentionally do nothing.
       // ECE maps extensions' "tabs" to full Electron BrowserWindows.
-      // If we call browserWindow.focus() here, Grammarly's background scripts 
-      // polling or selecting tabs will aggressively yank desktop focus and steal 
+      // If we call browserWindow.focus() here, Grammarly's background scripts
+      // polling or selecting tabs will aggressively yank desktop focus and steal
       // the screen from the user. We want the user to manage their own window focus.
     },
   });
@@ -209,7 +209,6 @@ export const createWindow = async (): Promise<BrowserWindow> => {
         logger.info(`[RENDERER] ${message} (${sourceId}:${line})`);
       }
     });
-
 
     // Verify contentView is created
     logger.info(`Main window contentView exists: ${!!mainWindow.contentView}`);
@@ -359,7 +358,6 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
   }
 };
 
-
 /**
  * Creates a dedicated, non-resizable dialog window for the software update process.
  */
@@ -411,7 +409,6 @@ export const createUpdateWindow = async (): Promise<BrowserWindow> => {
   }
 };
 
-
 /**
  * Opens a Grammarly sign-in window in the persist:grammarly session.
  * Since electron-chrome-extensions implements chrome.tabs.create at the IPC level,
@@ -448,7 +445,6 @@ export const loadExtension = async (browserSession: Session) => {
       allowFileAccess: true,
     });
     logger.info(`Extension loaded: ${ext.name} | Version: ${ext.version} | ID: ${ext.id}`);
-    
   } catch (err) {
     logger.error(`Failed to load extension from ${extensionPath}: ${err}`);
   }

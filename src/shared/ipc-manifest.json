@@ -24,6 +24,10 @@
       "channel": "system:bootloading",
       "type": "event"
     },
+    "copyAndPaste": {
+      "channel": "system:copyAndPaste",
+      "type": "invoke"
+    },
     "getAppInfo": {
       "channel": "system:getAppInfo",
       "type": "invoke"

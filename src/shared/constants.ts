@@ -127,7 +127,7 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   model: 'gpt-4o',
   enableThinking: false,
   systemPrompt:
-    'Translate the following content to English. Output ONLY the English translation.\n\n<content>\n{text}\n</content>',
+    'Translate the following content into English. Output ONLY the English translation.\n\n<content>\n{text}\n</content>',
 };
 
 export const CONFIG_KEYS = {

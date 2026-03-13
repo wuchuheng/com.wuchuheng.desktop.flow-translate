@@ -19,21 +19,25 @@ export const FlowTranslate: React.FC = () => {
     maxHeight: 600, // Max expansion
   });
 
-  const submitTranslation = () => {
+  const submitTranslation = (closeWindow: boolean = false) => {
     if (input.trim() && !isTranslating) {
-      startTranslation(input.trim());
-      setInput('');
+      startTranslation(input.trim(), closeWindow);
+      if (closeWindow) {
+        setInput('');
+      }
     }
   };
 
-  const { handleKeyDown, resetSpaceTimes } = useShortcuts(submitTranslation, () => window.electron.window.hide());
+  const { handleKeyDown } = useShortcuts(input, setInput, submitTranslation, () => window.electron.window.hide());
+
+  // Sync translation result back into the input field in real-time
+  useEffect(() => {
+    if (isTranslating && translation && !hasError) {
+      setInput(translation);
+    }
+  }, [translation, isTranslating, hasError]);
 
   useEffect(() => {
-    // Initial focus
-    const focusTimer = setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 100);
-
     // Setup window style
     const app = document.getElementById('app') as HTMLDivElement;
     if (app) {
@@ -47,17 +51,13 @@ export const FlowTranslate: React.FC = () => {
     const unsubscribeOnShow = window.electron.window.onShow(() => {
       setInput('');
       resetTranslation();
-      resetSpaceTimes();
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 50);
+      textareaRef.current?.focus();
     });
 
     return () => {
       unsubscribeOnShow();
-      clearTimeout(focusTimer);
     };
-  }, [resetTranslation, resetSpaceTimes]);
+  }, [resetTranslation]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -70,7 +70,7 @@ export const FlowTranslate: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={`max-h-screen w-full overflow-hidden font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
+      className={`font-sans w-full max-h-screen overflow-hidden ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
     >
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -94,111 +94,95 @@ export const FlowTranslate: React.FC = () => {
         }
       `}</style>
       <div
-        className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
+        className="h-full w-full flex flex-col overflow-hidden rounded-2xl backdrop-blur-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
         style={dynamicBgStyle}
       >
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-          {!isTranslating && !translation && (
-            <textarea
-              ref={textareaRef}
-              className="custom-scrollbar max-h-full min-h-[60px] w-full resize-none overflow-y-auto border-none bg-transparent p-4 text-lg font-medium leading-relaxed text-inherit placeholder-gray-400 outline-none [field-sizing:content] focus:ring-0 dark:placeholder-white/20"
-              placeholder="Ask Flow..."
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              autoFocus
-            />
-          )}
-
-          {(isTranslating || translation) && (
-            <div className="custom-scrollbar flex h-full flex-col gap-2 overflow-y-auto p-4">
-              <div
-                className={`mb-1 text-xs font-bold uppercase tracking-widest ${hasError ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}
+        <div className="flex-1 flex flex-col overflow-hidden relative min-h-0">
+          <textarea
+            ref={textareaRef}
+            className="w-full min-h-[60px] max-h-full [field-sizing:content] bg-transparent text-lg font-medium leading-relaxed p-4 border-none focus:ring-0 resize-none outline-none overflow-y-auto custom-scrollbar text-inherit placeholder-gray-400 dark:placeholder-white/20"
+            placeholder="Ask Flow..."
+            value={input}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+          
+          {hasError && translation && (
+            <div className="mx-4 mb-2 flex items-center gap-1.5 text-xs font-medium text-red-500/90">
+              <span className="font-bold uppercase tracking-wider opacity-70">Error:</span>
+              <span className="flex-1 truncate">{translation}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  resetTranslation();
+                }}
+                className="flex h-5 w-5 items-center justify-center rounded-md transition-colors hover:bg-red-500/10"
+                title="Clear error"
               >
-                {hasError ? 'Error' : 'Translation'}
-              </div>
-              <div className="text-lg font-light leading-relaxed text-inherit">
-                {translation || 'Thinking...'}
-                {isTranslating && (
-                  <span className="ml-1 inline-block h-5 w-1.5 animate-pulse rounded-full bg-blue-500 align-middle dark:bg-blue-400" />
-                )}
-              </div>
+                <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                </svg>
+              </button>
             </div>
           )}
         </div>
 
-        <div className="flex flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-4 py-3 text-xs font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40">
-          <div className="flex items-center gap-1">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-blue-500 dark:text-blue-400"
-            >
-              <path d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z" />
-              <path d="M12 2v20" />
-              <path d="M2 12h20" />
-            </svg>
-            <span>Flow Translate</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Grammarly sign-in button — opens a login window in the shared Grammarly session */}
-            <button
-              title="Sign in to Grammarly"
-              onClick={() => window.electron.grammarly.openAuth()}
-              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold text-green-600 opacity-60 transition-opacity hover:opacity-100 dark:text-green-400"
-            >
-              {/* Grammarly G icon */}
-              <svg width="12" height="12" viewBox="0 0 32 32" fill="currentColor">
-                <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2zm0 4a10 10 0 0 1 7.94 3.94L20.5 13.38A5.98 5.98 0 0 0 16 11a5 5 0 0 0 0 10 5.02 5.02 0 0 0 4.9-4H16v-3.5h8.46c.07.48.11.97.11 1.5 0 5.523-4.477 10-10 10S6 20.523 6 16 10.477 6 16 6z"/>
-              </svg>
-              Grammarly
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
+        <div className="flex min-h-[60px] flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 py-1.5 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40">
+          <div className="grid w-full grid-cols-3 gap-x-2 gap-y-1">
             {!isTranslating ? (
               <>
-                <div
-                  className="group flex cursor-pointer items-center"
-                  onClick={e => {
-                    e.stopPropagation();
-                    submitTranslation();
-                  }}
-                >
-                  <Key onClick={submitTranslation} title="Click to translate">
-                    Space
-                  </Key>{' '}
-                  <span className="mx-0.5 text-[10px]">×</span> <Key onClick={submitTranslation}>3</Key>
-                  <span className="ml-1 transition-colors group-hover:text-blue-400">to translate</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <Key title="Enter">Enter</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">trans, copy & close</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="Enter">Enter</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">translate only</span>
+                  </div>
                 </div>
-                <div
-                  className="group flex cursor-pointer items-center"
-                  onClick={e => {
-                    e.stopPropagation();
-                    window.electron.window.hide();
-                  }}
-                >
-                  <Key onClick={() => window.electron.window.hide()} title="Click to close">
-                    Esc
-                  </Key>
-                  <span className="ml-1 transition-colors group-hover:text-red-400">to close</span>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <Key title="Shift">Shift</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="Enter">⏎</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">/</span>
+                    <Key title="Ctrl">^</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="J">J</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">new line</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="D">D</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">clear content</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key><span className="mx-0.5 text-[10px] opacity-40">+</span><Key title="C">C</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">copy & close</span>
+                  </div>
+                  <div
+                    className="group flex cursor-pointer items-center"
+                    onClick={e => {
+                      e.stopPropagation();
+                      window.electron.window.hide();
+                    }}
+                  >
+                    <Key onClick={() => window.electron.window.hide()} title="Click to close">
+                      Esc
+                    </Key>
+                    <span className="ml-0.5 transition-colors group-hover:text-red-400">close only</span>
+                  </div>
                 </div>
               </>
             ) : (
-              <span className="flex items-center gap-2">
+              <div className="col-span-3 flex items-center justify-center gap-2 py-1">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75 dark:bg-blue-400"></span>
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500"></span>
                 </span>
-                Processing...
-              </span>
+                <span className="text-blue-500 font-bold uppercase tracking-widest text-[10px]">Processing...</span>
+              </div>
             )}
           </div>
         </div>

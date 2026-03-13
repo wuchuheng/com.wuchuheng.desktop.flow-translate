@@ -20,13 +20,24 @@ export const useTranslation = () => {
     return unsubscribe;
   }, []);
 
-  const startTranslation = (text: string) => {
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (hasError) {
+      timer = setTimeout(() => {
+        setHasError(false);
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [hasError]);
+
+  const startTranslation = (text: string, closeAfter: boolean = true) => {
     setTranslation('');
     setHasError(false);
     setIsTranslating(true);
     window.electron.translation.startTranslation({
       text,
       backspaceCount: 0,
+      closeAfter,
     });
   };
 

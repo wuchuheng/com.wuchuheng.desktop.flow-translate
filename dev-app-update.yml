@@ -1,4 +1,3 @@
 provider: generic
-url: https://example.com/updates
+url: https://static.tc.wuchuheng.com
 updaterCacheDirName: flow-translate-updater
-# Note: Actual URL is set dynamically via setFeedURL() in update.service.ts

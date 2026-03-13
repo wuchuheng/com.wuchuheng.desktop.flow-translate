@@ -45,9 +45,7 @@ app.on('web-contents-created', (_event, contents) => {
   // Extension service workers / background pages run freely — no nav interceptors.
   const contentsTypeStr = contentsType as string;
   const isExtensionWorker =
-    contentsTypeStr === 'backgroundPage' ||
-    contentsTypeStr === 'service_worker' ||
-    contentsTypeStr === 'offscreen';
+    contentsTypeStr === 'backgroundPage' || contentsTypeStr === 'service_worker' || contentsTypeStr === 'offscreen';
 
   if (isExtensionWorker) {
     logger.info(`Extension worker [${contentsId}] (${contentsType}) — skipping interceptors`);
@@ -138,7 +136,9 @@ export const recreateMainWindow = async () => {
   }
   try {
     mainWindow = await createWindow();
-    mainWindow.on('closed', () => { mainWindow = null; });
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
     return mainWindow;
   } catch (error) {
     logger.error(`Failed to recreate main window: ${error instanceof Error ? error.message : String(error)}`);
@@ -155,8 +155,8 @@ export const registerGlobalShortcut = async () => {
     globalShortcut.unregisterAll();
     const success = globalShortcut.register(shortcut, () => {
       if (floatingWindow) {
-        // Run PowerShell window capture entirely in the background so it doesn't block the UI
-        setTimeout(() => capturePreviousWindow(), 0);
+        // Run PowerShell window capture immediately to capture the correct window
+        capturePreviousWindow();
 
         const cursorPoint = screen.getCursorScreenPoint();
         const display = screen.getDisplayNearestPoint(cursorPoint);
@@ -191,7 +191,9 @@ app.on('ready', async () => {
 
     // 2.1 Create the main window
     mainWindow = await createWindow();
-    mainWindow.on('closed', () => { mainWindow = null; });
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
 
     // 2.2 Create floating window (hidden by default)
     floatingWindow = await createFloatingWindow();
