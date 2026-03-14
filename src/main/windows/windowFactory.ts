@@ -3,9 +3,6 @@ import { ElectronChromeExtensions } from 'electron-chrome-extensions';
 import net from 'node:net';
 import * as path from 'path';
 import { logger } from '../utils/logger';
-import { getDataSource } from '../database/data-source';
-import { Config } from '../database/entities/config.entity';
-import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
 import { getExtensionPath } from '../config/config';
 
 const getMainWindowEntry = () => {
@@ -210,7 +207,6 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
   const mainWindowEntry = getMainWindowEntry();
   const preloadEntry = getPreloadEntry();
   const grammarlySession = getGrammarlySession();
-  const extensions = getExtensions();
 
   try {
     const floatingWindow = new BrowserWindow({

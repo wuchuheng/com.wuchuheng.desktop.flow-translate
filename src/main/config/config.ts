@@ -14,7 +14,10 @@ export const getExtensionPath = (): string => {
   // In production, electron-builder puts extraResources into process.resourcesPath
   // If we asarUnpack them, they are in app.asar.unpacked/src/renderer/assets/extensions/...
   const packedPath = path.join(process.resourcesPath, `extensions/grammarly/${version}`);
-  const unpackedPath = path.join(process.resourcesPath, `app.asar.unpacked/src/renderer/assets/extensions/grammarly/${version}`);
+  const unpackedPath = path.join(
+    process.resourcesPath,
+    `app.asar.unpacked/src/renderer/assets/extensions/grammarly/${version}`
+  );
 
   // In development, they are in the source tree
   const devPath = path.resolve(app.getAppPath(), `src/renderer/assets/extensions/grammarly/${version}`);
