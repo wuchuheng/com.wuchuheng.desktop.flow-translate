@@ -185,8 +185,9 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       backgroundColor: '#1e1e2e',
     });
 
-    // Auto-open DevTools
-    mainWindow.webContents.openDevTools();
+    if (!app.isPackaged) {
+      mainWindow.webContents.openDevTools();
+    }
 
     extensions.addTab(mainWindow.webContents, mainWindow);
 
@@ -234,8 +235,9 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
       titleBarStyle: 'hidden',
     });
 
-    // Open DevTools for floating window
-    floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    if (!app.isPackaged) {
+      floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    }
 
     // Register the floating window as a tab so extension APIs like
     // chrome.tabs.query() return it and content scripts attach to it.
@@ -278,8 +280,9 @@ export const createUpdateWindow = async (): Promise<BrowserWindow> => {
     show: false,
   });
 
-  // Auto-open DevTools
-  updateWindow.webContents.openDevTools({ mode: 'detach' });
+  if (!app.isPackaged) {
+    updateWindow.webContents.openDevTools({ mode: 'detach' });
+  }
 
   updateWindow.loadURL(`${mainWindowEntry}#/update-dialog`);
   updateWindow.once('ready-to-show', () => updateWindow.show());
@@ -307,8 +310,9 @@ export const openGrammarlyAuthWindow = (targetUrl = 'https://www.grammarly.com/s
     },
   });
 
-  // Always open DevTools
-  authWindow.webContents.openDevTools({ mode: 'detach' });
+  if (!app.isPackaged) {
+    authWindow.webContents.openDevTools({ mode: 'detach' });
+  }
 
   authWindow.loadURL(targetUrl);
 
