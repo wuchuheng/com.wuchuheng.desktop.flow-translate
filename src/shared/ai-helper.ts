@@ -1,5 +1,29 @@
-import { AI_PROVIDER_CATALOG } from './constants';
+import { AI_PROVIDER_CATALOG, type AiConfig, type AiProviderConfig } from './constants';
 import { thinkingConfig } from './config/thinkingConfig';
+
+/**
+ * Get provider config by ID
+ */
+export const getProviderById = (providerId: string): AiProviderConfig | undefined => {
+  return AI_PROVIDER_CATALOG.find(p => p.id === providerId);
+};
+
+/**
+ * Get base URL for a config
+ * Priority: customBaseUrl > provider.baseUrl
+ */
+export const getBaseUrl = (config: AiConfig): string | undefined => {
+  const provider = getProviderById(config.providerId);
+  return config.customBaseUrl || provider?.baseUrl;
+};
+
+/**
+ * Check if provider uses Ollama parser
+ */
+export const isOllamaProvider = (providerId: string): boolean => {
+  const provider = getProviderById(providerId);
+  return provider?.parser === 'ollama';
+};
 
 /**
  * Extract truth model name from string with potential suffix after : character.
@@ -25,7 +49,7 @@ export const addThinkingArgument = (
 
   // 1. Provider-specific configuration (New Priority)
   if (providerId) {
-    const provider = AI_PROVIDER_CATALOG.find(p => p.id === providerId);
+    const provider = getProviderById(providerId);
     if (provider?.thinkingConfig) {
       const config = enable ? provider.thinkingConfig.enable : provider.thinkingConfig.disable;
       // Deep merge the config into requestConfig

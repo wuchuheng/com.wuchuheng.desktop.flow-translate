@@ -4,11 +4,9 @@ import { pasteText, restorePreviousWindow } from '../../utils/win-api-helper';
 import { BrowserWindow } from 'electron';
 import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
-import OpenAI from 'openai';
-import { AI_PROVIDER_CATALOG, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
-import { Stream } from 'openai/streaming';
-import { ChatCompletionChunk, ChatCompletionCreateParams } from 'openai/resources/chat/completions';
-import { addThinkingArgument, cleanModelName } from '@/shared/ai-helper';
+import { PARSERS, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
+import { getProviderById, getBaseUrl } from '@/shared/ai-helper';
+import type { ChatRequest } from '@/shared/types';
 
 export const onTranslateChunk = createEvent<{ chunk: string; done: boolean; isError?: boolean }>();
 
@@ -19,78 +17,37 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     const repo = getDataSource().getRepository(Config);
     const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.AI });
     const config = (configEntity?.value || {}) as AiConfig;
+    const { apiKey, model, enableThinking, systemPrompt } = config;
 
-    const { providerId, apiKey, model, customBaseUrl, enableThinking, systemPrompt } = config;
-
-    if (!apiKey) {
-      throw new Error('API Key not configured. Please check Settings.');
-    }
-
-    const currentProvider = AI_PROVIDER_CATALOG.find(p => p.id === providerId);
-    const baseUrl = providerId === 'custom' ? customBaseUrl : currentProvider?.baseUrl;
+    const provider = getProviderById(config.providerId);
+    const parser = PARSERS[provider?.parser || 'openai'];
+    const baseUrl = getBaseUrl(config);
 
     if (!baseUrl) {
-      throw new Error(`Base URL not found for provider: ${providerId}`);
+      throw new Error(`Base URL not found for provider: ${config.providerId}`);
     }
 
-    const cleanedModel = cleanModelName(model || 'gpt-3.5-turbo');
-    logger.info(`Starting translation with model: ${cleanedModel} (original: ${model})`);
-
-    const client = new OpenAI({
-      apiKey,
-      baseURL: baseUrl,
-    });
+    logger.info(`Starting translation: provider=${config.providerId}, model=${model}, thinking=${enableThinking}`);
 
     const promptTemplate = systemPrompt || DEFAULT_AI_CONFIG.systemPrompt;
-    let messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+    const messages: ChatRequest['messages'] = promptTemplate.includes('{text}')
+      ? [{ role: 'user', content: promptTemplate.replace('{text}', text) }]
+      : [
+          { role: 'system', content: promptTemplate },
+          { role: 'user', content: `<content>\n${text}\n</content>` },
+        ];
 
-    if (promptTemplate.includes('{text}')) {
-      // If the template contains {text}, we treat it as a single user message for maximum compatibility
-      messages = [{ role: 'user', content: promptTemplate.replace('{text}', text) }];
-    } else {
-      messages = [
-        { role: 'system', content: promptTemplate },
-        { role: 'user', content: `<content>\n${text}\n</content>` },
-      ];
-    }
-
-    let requestConfig: Record<string, unknown> = {
+    const chatRequest: ChatRequest = {
       model: model || 'gpt-3.5-turbo',
       messages,
-      stream: true,
-      stream_options: { include_usage: true },
+      enableThinking: !!enableThinking,
+      providerId: config.providerId,
     };
 
-    requestConfig = addThinkingArgument(requestConfig, model, providerId, !!enableThinking);
-    logger.info(`[AI Request Config]: ${JSON.stringify(requestConfig, null, 2)}`);
-
-    const stream = (await client.chat.completions.create(
-      requestConfig as unknown as ChatCompletionCreateParams
-    )) as Stream<ChatCompletionChunk>;
-
     let fullTranslation = '';
-    let totalUsage: {
-      prompt_tokens: number;
-      completion_tokens: number;
-      total_tokens: number;
-    } | null = null;
-
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) {
-        fullTranslation += content;
-        onTranslateChunk({ chunk: content, done: false });
-      }
-
-      if (chunk.usage) {
-        totalUsage = chunk.usage;
-      }
-    }
-
-    if (totalUsage) {
-      logger.info(
-        `[AI Usage Summary]: Prompt: ${totalUsage.prompt_tokens}, Completion: ${totalUsage.completion_tokens}, Total: ${totalUsage.total_tokens}`
-      );
+    for await (const chunk of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
+      fullTranslation += chunk;
+      onTranslateChunk({ chunk, done: false });
     }
 
     onTranslateChunk({ chunk: '', done: true });
