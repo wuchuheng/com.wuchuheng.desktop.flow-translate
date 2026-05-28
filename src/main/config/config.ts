@@ -9,7 +9,8 @@ import { logger } from '../utils/logger';
  */
 export const getExtensionPath = (): string => {
   // Try versioned paths first, falling back to a direct path if necessary
-  const version = '14.1276.0_0';
+  // The -patched variant has auth checks bypassed so the extension works without login
+  const version = '14.1276.0_0-patched';
 
   // In production, electron-builder puts extraResources into process.resourcesPath
   // If we asarUnpack them, they are in app.asar.unpacked/src/renderer/assets/extensions/...
