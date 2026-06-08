@@ -181,9 +181,11 @@ export const CONFIG_KEYS = {
 export type AppConfig = {
   runInBackground: boolean;
   autoStart: boolean;
+  extensionEnabled: boolean;
 };
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
   runInBackground: true,
   autoStart: false,
+  extensionEnabled: true,
 };

@@ -22,6 +22,7 @@ type IpcModules = {
     getAppInfo: typeof import('../main/ipc/system/getAppInfo.ipc').default;
     getBootloadProgressing: typeof import('../main/ipc/system/getBootloadProgressing.ipc').default;
     reloadHotkeys: typeof import('../main/ipc/system/reloadHotkeys.ipc').default;
+    restart: typeof import('../main/ipc/system/restart.ipc').default;
   };
   translation: {
     onTranslateChunk: typeof import('../main/ipc/translation/onTranslateChunk.ipc').default;

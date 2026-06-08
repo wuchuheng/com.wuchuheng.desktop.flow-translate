@@ -39,6 +39,10 @@
     "reloadHotkeys": {
       "channel": "system:reloadHotkeys",
       "type": "invoke"
+    },
+    "restart": {
+      "channel": "system:restart",
+      "type": "invoke"
     }
   },
   "translation": {

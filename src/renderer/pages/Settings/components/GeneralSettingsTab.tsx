@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Form, Input, Button, message, Switch, Divider } from 'antd';
+import { Form, Input, Button, message, Switch, Divider, Modal } from 'antd';
 import { useConfig } from '../../../hooks/useConfig';
 import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
 
@@ -37,12 +37,24 @@ export const GeneralSettingsTab: React.FC = () => {
     const appValues = {
       runInBackground: values.runInBackground,
       autoStart: values.autoStart,
+      extensionEnabled: values.extensionEnabled,
     };
 
     await saveHotkeyConfig(hotkeyValues);
     await saveAppConfig(appValues);
 
     await window.electron.system.reloadHotkeys();
+
+    if (values.extensionEnabled !== appConfig.extensionEnabled) {
+      Modal.confirm({
+        title: 'Restart Required',
+        content: 'Extension settings will take effect after restart. Restart now?',
+        okText: 'Restart Now',
+        cancelText: 'Later',
+        onOk: () => window.electron.system.restart(),
+      });
+    }
+
     messageApi.success('General settings saved successfully');
   };
 
@@ -75,6 +87,15 @@ export const GeneralSettingsTab: React.FC = () => {
           name="autoStart"
           valuePropName="checked"
           help="Automatically start the application when you log in to your computer."
+        >
+          <Switch />
+        </Form.Item>
+
+        <Form.Item
+          label="Enable Grammarly Extension"
+          name="extensionEnabled"
+          valuePropName="checked"
+          help="Load the Grammarly extension. Requires restart to take effect."
         >
           <Switch />
         </Form.Item>

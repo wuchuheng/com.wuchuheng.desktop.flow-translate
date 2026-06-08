@@ -134,7 +134,7 @@ const ensureRendererAvailable = async (entryUrl: string, entryMeta: ReturnType<t
   }
 };
 
-export const createWindow = async (): Promise<BrowserWindow> => {
+export const createWindow = async (extensionEnabled = true): Promise<BrowserWindow> => {
   logger.info('Creating main window');
 
   const mainWindowEntry = getMainWindowEntry();
@@ -153,10 +153,15 @@ export const createWindow = async (): Promise<BrowserWindow> => {
   }
 
   try {
-    // Both windows use the grammarly session so extensions work everywhere
     const grammarlySession = getGrammarlySession();
-    const extensions = getExtensions();
-    await loadExtension(grammarlySession);
+    let extensions: ElectronChromeExtensions | null = null;
+
+    if (extensionEnabled) {
+      extensions = getExtensions();
+      await loadExtension(grammarlySession);
+    } else {
+      logger.info('Grammarly extension disabled via config — skipping load');
+    }
 
     // Create the browser window.
     logger.info(`Creating BrowserWindow with preload path: ${preloadEntry}`);
@@ -186,7 +191,9 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       mainWindow.webContents.openDevTools();
     }
 
-    extensions.addTab(mainWindow.webContents, mainWindow);
+    if (extensions) {
+      extensions.addTab(mainWindow.webContents, mainWindow);
+    }
 
     logger.info('BrowserWindow created successfully');
 
