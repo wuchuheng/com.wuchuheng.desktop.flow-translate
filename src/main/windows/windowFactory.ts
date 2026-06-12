@@ -246,6 +246,15 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
     // chrome.tabs.query() return it and content scripts attach to it.
     // extensions.addTab(floatingWindow.webContents, floatingWindow);
 
+    // Block Ctrl+W from closing the floating window — the renderer handles
+    // word deletion instead.  Chromium intercepts Ctrl+W before any DOM event
+    // fires, so we must block it here at the main-process level.
+    floatingWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'w' && (input.control || input.meta)) {
+        event.preventDefault();
+      }
+    });
+
     floatingWindow.loadURL(`${mainWindowEntry}#/flow-translate`);
 
     floatingWindow.on('blur', () => {
