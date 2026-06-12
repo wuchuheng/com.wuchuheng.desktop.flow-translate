@@ -26,6 +26,8 @@ type ShortcutHandlers = {
   isHistoryMode?: boolean;
   /** Whether the current history item has an empty transaction */
   isTransactionEmpty?: boolean;
+  /** Called when pressing Ctrl+Shift+? to toggle shortcuts visibility */
+  onToggleShortcuts?: () => void;
 };
 
 /**
@@ -122,6 +124,13 @@ export const useShortcuts = (
         e.preventDefault();
         handlers.onToggleSide?.();
       }
+      return;
+    }
+
+    // Ctrl+Shift+?: Toggle shortcuts visibility
+    if (e.key === '/' && e.ctrlKey && e.shiftKey) {
+      e.preventDefault();
+      handlers.onToggleShortcuts?.();
       return;
     }
 
