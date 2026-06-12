@@ -141,7 +141,7 @@ export const FlowTranslate: React.FC = () => {
     const ta = textareaRef.current;
     if (!ta) return;
 
-    const FOOTER_RESERVE = 90;
+    const FOOTER_RESERVE = 115;
     const MIN_WIN = 100;
     const MAX_WIN = 400;
 
