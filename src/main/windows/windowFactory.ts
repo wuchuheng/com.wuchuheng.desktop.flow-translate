@@ -238,7 +238,9 @@ export const createFloatingWindow = async (): Promise<BrowserWindow> => {
       titleBarStyle: 'hidden',
     });
 
-    floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    if (!app.isPackaged) {
+      floatingWindow.webContents.openDevTools({ mode: 'detach' });
+    }
 
     // Register the floating window as a tab so extension APIs like
     // chrome.tabs.query() return it and content scripts attach to it.
