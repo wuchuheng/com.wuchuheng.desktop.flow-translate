@@ -1,4 +1,4 @@
-import type { AiProviderParser, ChatRequest, KeepAliveValue } from '../types';
+import type { AiProviderParser, ChatRequest, KeepAliveValue, StreamChunk } from '../types';
 
 /**
  * Ollama native API parser.
@@ -16,7 +16,7 @@ export const ollamaParser: AiProviderParser = {
     return data.data?.map((m: { id: string }) => m.id) || [];
   },
 
-  async *streamChat(baseUrl: string, _apiKey: string, request: ChatRequest): AsyncGenerator<string> {
+  async *streamChat(baseUrl: string, _apiKey: string, request: ChatRequest): AsyncGenerator<StreamChunk> {
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ export const ollamaParser: AiProviderParser = {
 
           try {
             const chunk = JSON.parse(line);
-            if (chunk.message?.content) yield chunk.message.content;
+            if (chunk.message?.content) yield { content: chunk.message.content };
             if (chunk.done) return;
           } catch {
             // Skip malformed JSON lines

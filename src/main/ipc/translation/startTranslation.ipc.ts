@@ -9,7 +9,17 @@ import { PARSERS, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/cons
 import { getProviderById, getBaseUrl } from '@/shared/ai-helper';
 import type { ChatRequest } from '@/shared/types';
 
-export const onTranslateChunk = createEvent<{ chunk: string; done: boolean; isError?: boolean }>();
+export type TranslateChunkPayload = {
+  chunk: string;
+  done: boolean;
+  isError?: boolean;
+  stats?: {
+    charsReceived: number;
+    tokensUsed?: number;
+  };
+};
+
+export const onTranslateChunk = createEvent<TranslateChunkPayload>();
 
 const startTranslation = async (payload: { text: string; backspaceCount: number; closeAfter?: boolean }) => {
   const { text, closeAfter = true } = payload;
@@ -50,9 +60,17 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     };
 
     let fullTranslation = '';
-    for await (const chunk of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
-      fullTranslation += chunk;
-      onTranslateChunk({ chunk, done: false });
+    let totalChars = 0;
+    let tokensUsed: number | undefined;
+    for await (const sc of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
+      fullTranslation += sc.content;
+      totalChars += sc.content.length;
+      if (sc.usage?.completionTokens) tokensUsed = sc.usage.completionTokens;
+      onTranslateChunk({
+        chunk: sc.content,
+        done: false,
+        stats: { charsReceived: totalChars, tokensUsed },
+      });
     }
 
     onTranslateChunk({ chunk: '', done: true });

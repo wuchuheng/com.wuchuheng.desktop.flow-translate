@@ -28,7 +28,10 @@ export const FlowTranslate: React.FC = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { theme, isDarkMode } = useAppTheme();
-  const { translation, isTranslating, hasError, startTranslation, resetTranslation, getOriginalInput } = useTranslation();
+  const {
+    translation, isTranslating, hasError, startTranslation, resetTranslation, getOriginalInput,
+    elapsedMs, charsReceived, tokensUsed,
+  } = useTranslation();
   const {
     mode, activeId, showingSide, historyList, activeContent,
     navigate, toggleSide, onEditInHistory, cacheLatest, getCachedLatest,
@@ -241,12 +244,16 @@ export const FlowTranslate: React.FC = () => {
 
         <div className="flex min-h-[60px] flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 py-1.5 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40">
           {isTranslating ? (
-            <div className="col-span-3 flex w-full items-center justify-center gap-2 py-1">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75 dark:bg-blue-400" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500" />
+            <div className="flex w-full items-center justify-center gap-6 py-1 font-mono text-[11px] tracking-tight">
+              <span className="tabular-nums text-blue-500">
+                {(elapsedMs / 1000).toFixed(2)}<span className="ml-0.5 text-[9px] text-gray-400">s</span>
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Processing...</span>
+              <span className="tabular-nums text-blue-500">
+                {charsReceived}<span className="ml-0.5 text-[9px] text-gray-400">ch</span>
+              </span>
+              <span className="tabular-nums text-blue-500">
+                {tokensUsed !== undefined ? tokensUsed : `~${Math.max(1, Math.round(charsReceived / 4))}`}<span className="ml-0.5 text-[9px] text-gray-400">tk</span>
+              </span>
             </div>
           ) : mode === 'history' && activeId !== null ? (
             <div className="flex w-full items-center justify-between px-1">
