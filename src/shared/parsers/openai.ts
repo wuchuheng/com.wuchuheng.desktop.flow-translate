@@ -37,6 +37,7 @@ export const openaiParser: AiProviderParser = {
       model,
       messages: request.messages,
       stream: true,
+      stream_options: { include_usage: true },
       ...addThinkingArgument({}, model, request.providerId, request.enableThinking),
     })) as Stream<ChatCompletionChunk>;
 

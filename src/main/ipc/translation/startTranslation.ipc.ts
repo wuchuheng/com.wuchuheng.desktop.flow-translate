@@ -67,8 +67,8 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     for await (const sc of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
       fullTranslation += sc.content;
       totalChars += sc.content.length;
-      if (sc.usage?.completionTokens) completionTokens = sc.usage.completionTokens;
-      if (sc.usage?.promptTokens) promptTokens = sc.usage.promptTokens;
+      if (sc.usage?.completionTokens !== undefined) completionTokens = sc.usage.completionTokens;
+      if (sc.usage?.promptTokens !== undefined) promptTokens = sc.usage.promptTokens;
       onTranslateChunk({
         chunk: sc.content,
         done: false,
