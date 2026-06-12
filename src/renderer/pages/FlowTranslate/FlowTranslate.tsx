@@ -36,19 +36,27 @@ export const FlowTranslate: React.FC = () => {
   // Footer shortcuts visibility (collapsed by default)
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  // Persist last translation summary so it stays visible after completion
+  // Persist last translation summary so it stays visible after completion.
+  // Capture stats from the most recent chunk-payload values via a ref so we
+  // don't lose them across re-renders.
   const [lastSummary, setLastSummary] = useState<{
     input: number; output: number; total: number; secs: number;
   } | null>(null);
+  const statsRef = useRef({ charsReceived, completionTokens, promptTokens, elapsedMs });
+  statsRef.current = { charsReceived, completionTokens, promptTokens, elapsedMs };
+
   const prevTranslatingRef = useRef(isTranslating);
   useEffect(() => {
-    if (prevTranslatingRef.current && !isTranslating && charsReceived > 0 && !hasError) {
-      const inputTk = promptTokens ?? 0;
-      const outputTk = completionTokens ?? Math.round(charsReceived / 4);
-      setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
+    if (prevTranslatingRef.current && !isTranslating && !hasError) {
+      const s = statsRef.current;
+      if (s.charsReceived > 0) {
+        const inputTk = s.promptTokens ?? 0;
+        const outputTk = s.completionTokens ?? Math.round(s.charsReceived / 4);
+        setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: s.elapsedMs / 1000 });
+      }
     }
     prevTranslatingRef.current = isTranslating;
-  }, [isTranslating, charsReceived, completionTokens, promptTokens, elapsedMs, hasError]);
+  }, [isTranslating, hasError]);
 
   const {
     mode, activeId, showingSide, historyList, activeContent,
@@ -262,7 +270,7 @@ export const FlowTranslate: React.FC = () => {
           )}
         </div>
 
-        <div className="flex min-h-[60px] flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 py-1.5 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40">
+        <div className={`flex flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40 ${showShortcuts ? 'min-h-[60px] py-1.5' : 'min-h-0 py-0.5'}`}>
           {isTranslating ? (
             <div className="flex w-full items-center justify-center gap-6 py-1 font-mono text-[11px] tracking-tight">
               <span className="tabular-nums text-blue-500">

@@ -128,7 +128,7 @@ export const useShortcuts = (
     }
 
     // Ctrl+Shift+?: Toggle shortcuts visibility
-    if (e.key === '/' && e.ctrlKey && e.shiftKey) {
+    if (e.code === 'Slash' && e.ctrlKey && e.shiftKey) {
       e.preventDefault();
       handlers.onToggleShortcuts?.();
       return;
