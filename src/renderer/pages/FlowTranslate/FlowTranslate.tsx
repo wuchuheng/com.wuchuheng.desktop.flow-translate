@@ -42,11 +42,9 @@ export const FlowTranslate: React.FC = () => {
   } | null>(null);
   const wasTranslatingRef = useRef(false);
   useEffect(() => {
-    console.log('[summary] effect:', { was: wasTranslatingRef.current, isTranslating, hasError, charsReceived, completionTokens, promptTokens, elapsedMs });
     if (wasTranslatingRef.current && !isTranslating && !hasError && charsReceived > 0) {
       const inputTk = promptTokens ?? 0;
       const outputTk = completionTokens ?? Math.round(charsReceived / 4);
-      console.log('[summary] SET', { inputTk, outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
       setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
     }
     wasTranslatingRef.current = isTranslating;
@@ -356,13 +354,13 @@ export const FlowTranslate: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="flex items-center justify-between font-mono text-[10px] text-gray-400 dark:text-white/25">
+              <div className="flex items-center justify-between font-mono text-[10px] text-gray-500 dark:text-white/35">
                 <span>
                   {lastSummary
                     ? `last  ${lastSummary.input} input tokens  ${lastSummary.output} output tokens  ${lastSummary.total} total tokens  ${lastSummary.secs.toFixed(2)}s`
                     : '\u00A0'}
                 </span>
-                <span className="ml-2 shrink-0 text-[9px] text-gray-400/50">ctrl+shift+? shortcuts</span>
+                <span className="ml-2 shrink-0 text-[9px] text-gray-400/70">ctrl+shift+? help</span>
               </div>
             </div>
           )}
