@@ -1,25 +1,31 @@
 import { useEffect, useRef } from 'react';
 
-export const useAutoResize = (
-  ref: React.RefObject<HTMLElement>,
-  options: { width?: number; minHeight?: number; maxHeight?: number } = {}
-) => {
+type ResizeOptions = {
+  /** Fixed width for the Electron window (default: 600) */
+  width?: number;
+  /** Minimum window height in pixels (default: 100) */
+  minHeight?: number;
+  /** Maximum window height in pixels (default: 800) */
+  maxHeight?: number;
+};
+
+/**
+ * Observes a container element and resizes the Electron BrowserWindow
+ * to fit its content, clamped between minHeight and maxHeight.
+ */
+export const useAutoResize = (ref: React.RefObject<HTMLElement | null>, options: ResizeOptions = {}) => {
   const { width = 600, minHeight = 100, maxHeight = 800 } = options;
   const previousHeight = useRef(0);
 
   useEffect(() => {
-    if (!ref.current) return;
+    const element = ref.current;
+    if (!element) return;
 
     const observer = new ResizeObserver(() => {
       if (!ref.current) return;
 
-      // Use offsetHeight to include padding/borders
       let height = ref.current.scrollHeight;
 
-      // Add a tiny buffer for borders if needed, or rely on scrollHeight
-      // If overflow is hidden, scrollHeight is the full content height.
-
-      // Clamp height
       if (height < minHeight) height = minHeight;
       if (height > maxHeight) height = maxHeight;
 
@@ -29,8 +35,7 @@ export const useAutoResize = (
       }
     });
 
-    observer.observe(ref.current);
-
+    observer.observe(element);
     return () => observer.disconnect();
   }, [ref, width, minHeight, maxHeight]);
 };

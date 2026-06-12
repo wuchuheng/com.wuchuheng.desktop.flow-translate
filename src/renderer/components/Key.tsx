@@ -6,6 +6,10 @@ type KeyProps = {
   title?: string;
 };
 
+/**
+ * Visual keyboard-key badge used in the shortcut legend at the bottom
+ * of the floating window.
+ */
 export const Key: React.FC<KeyProps> = ({ children, onClick, title }) => (
   <span
     onClick={e => {

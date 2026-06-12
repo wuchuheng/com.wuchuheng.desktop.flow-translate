@@ -6,6 +6,22 @@ import { useAutoResize } from '../../hooks/useAutoResize';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { hexToRgba } from '@/shared/utils';
 
+/** Custom scrollbar styles for the textarea (light + dark variants) */
+const SCROLLBAR_STYLES = `
+  .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,0.2); }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(255,255,255,0.2); }
+`;
+
+/**
+ * Floating translation window — the primary UI of the app.
+ *
+ * Auto-focuses on show, streams translation results in real-time,
+ * and resizes the Electron BrowserWindow to fit content.
+ */
 export const FlowTranslate: React.FC = () => {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -14,10 +30,7 @@ export const FlowTranslate: React.FC = () => {
   const { theme, isDarkMode } = useAppTheme();
   const { translation, isTranslating, hasError, startTranslation, resetTranslation } = useTranslation();
 
-  useAutoResize(containerRef, {
-    minHeight: 100, // Input + Footer approx
-    maxHeight: 600, // Max expansion
-  });
+  useAutoResize(containerRef, { minHeight: 100, maxHeight: 600 });
 
   const submitTranslation = (closeWindow: boolean = false) => {
     if (input.trim() && !isTranslating) {
@@ -28,18 +41,23 @@ export const FlowTranslate: React.FC = () => {
     }
   };
 
-  const { handleKeyDown } = useShortcuts(input, setInput, submitTranslation, () => window.electron.window.hide());
+  const { handleKeyDown } = useShortcuts(
+    input,
+    setInput,
+    { onSubmit: submitTranslation, onClose: () => window.electron.window.hide() },
+    textareaRef
+  );
 
-  // Sync translation result back into the input field in real-time
+  // Stream translation result into the input field in real-time
   useEffect(() => {
     if (isTranslating && translation && !hasError) {
       setInput(translation);
     }
   }, [translation, isTranslating, hasError]);
 
+  // Setup window styles and focus handler on show
   useEffect(() => {
-    // Setup window style
-    const app = document.getElementById('app') as HTMLDivElement;
+    const app = document.getElementById('app') as HTMLDivElement | null;
     if (app) {
       app.style.display = 'block';
       app.style.height = '100vh';
@@ -47,52 +65,23 @@ export const FlowTranslate: React.FC = () => {
       document.title = '';
     }
 
-    // Handle show event
     const unsubscribeOnShow = window.electron.window.onShow(() => {
       setInput('');
       resetTranslation();
       textareaRef.current?.focus();
     });
 
-    return () => {
-      unsubscribeOnShow();
-    };
+    return unsubscribeOnShow;
   }, [resetTranslation]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-  };
-
-  const dynamicBgStyle = {
-    backgroundColor: hexToRgba(theme.backgroundColor, theme.opacity),
-  };
+  const dynamicBgStyle = { backgroundColor: hexToRgba(theme.backgroundColor, theme.opacity) };
 
   return (
     <div
       ref={containerRef}
       className={`max-h-screen w-full overflow-hidden font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
     >
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(0, 0, 0, 0.1);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(0, 0, 0, 0.2);
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.1);
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(255, 255, 255, 0.2);
-        }
-      `}</style>
+      <style>{SCROLLBAR_STYLES}</style>
       <div
         className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
         style={dynamicBgStyle}
@@ -103,7 +92,7 @@ export const FlowTranslate: React.FC = () => {
             className="custom-scrollbar max-h-full min-h-[60px] w-full resize-none overflow-y-auto border-none bg-transparent p-4 text-lg font-medium leading-relaxed text-inherit placeholder-gray-400 outline-none [field-sizing:content] focus:ring-0 dark:placeholder-white/20"
             placeholder="Ask Flow..."
             value={input}
-            onChange={handleInputChange}
+            onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
           />
@@ -130,7 +119,15 @@ export const FlowTranslate: React.FC = () => {
 
         <div className="flex min-h-[60px] flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 py-1.5 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40">
           <div className="grid w-full grid-cols-3 gap-x-2 gap-y-1">
-            {!isTranslating ? (
+            {isTranslating ? (
+              <div className="col-span-3 flex items-center justify-center gap-2 py-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75 dark:bg-blue-400" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500" />
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Processing...</span>
+              </div>
+            ) : (
               <>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center">
@@ -185,14 +182,6 @@ export const FlowTranslate: React.FC = () => {
                   </div>
                 </div>
               </>
-            ) : (
-              <div className="col-span-3 flex items-center justify-center gap-2 py-1">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75 dark:bg-blue-400"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500"></span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Processing...</span>
-              </div>
             )}
           </div>
         </div>
