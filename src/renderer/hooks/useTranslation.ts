@@ -22,7 +22,8 @@ export const useTranslation = () => {
   // Streaming stats
   const [elapsedMs, setElapsedMs] = useState(0);
   const [charsReceived, setCharsReceived] = useState(0);
-  const [tokensUsed, setTokensUsed] = useState<number | undefined>(undefined);
+  const [completionTokens, setCompletionTokens] = useState<number | undefined>(undefined);
+  const [promptTokens, setPromptTokens] = useState<number | undefined>(undefined);
   const startTimeRef = useRef<number>(0);
 
   // Listen for streaming translation chunks from the main process
@@ -36,8 +37,11 @@ export const useTranslation = () => {
       }
       if (payload.stats) {
         setCharsReceived(payload.stats.charsReceived);
-        if (payload.stats.tokensUsed !== undefined) {
-          setTokensUsed(payload.stats.tokensUsed);
+        if (payload.stats.completionTokens !== undefined) {
+          setCompletionTokens(payload.stats.completionTokens);
+        }
+        if (payload.stats.promptTokens !== undefined) {
+          setPromptTokens(payload.stats.promptTokens);
         }
       }
       if (payload.done) {
@@ -78,7 +82,8 @@ export const useTranslation = () => {
     setTranslation('');
     setHasError(false);
     setCharsReceived(0);
-    setTokensUsed(undefined);
+    setCompletionTokens(undefined);
+    setPromptTokens(undefined);
     setIsTranslating(true);
     window.electron.translation.startTranslation({
       text,
@@ -94,7 +99,8 @@ export const useTranslation = () => {
     setHasError(false);
     setElapsedMs(0);
     setCharsReceived(0);
-    setTokensUsed(undefined);
+    setCompletionTokens(undefined);
+    setPromptTokens(undefined);
     originalInputRef.current = '';
   };
 
@@ -110,6 +116,7 @@ export const useTranslation = () => {
     getOriginalInput,
     elapsedMs,
     charsReceived,
-    tokensUsed,
+    completionTokens,
+    promptTokens,
   };
 };

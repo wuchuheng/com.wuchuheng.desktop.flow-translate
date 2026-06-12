@@ -15,7 +15,8 @@ export type TranslateChunkPayload = {
   isError?: boolean;
   stats?: {
     charsReceived: number;
-    tokensUsed?: number;
+    completionTokens?: number;
+    promptTokens?: number;
   };
 };
 
@@ -61,15 +62,17 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
 
     let fullTranslation = '';
     let totalChars = 0;
-    let tokensUsed: number | undefined;
+    let completionTokens: number | undefined;
+    let promptTokens: number | undefined;
     for await (const sc of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
       fullTranslation += sc.content;
       totalChars += sc.content.length;
-      if (sc.usage?.completionTokens) tokensUsed = sc.usage.completionTokens;
+      if (sc.usage?.completionTokens) completionTokens = sc.usage.completionTokens;
+      if (sc.usage?.promptTokens) promptTokens = sc.usage.promptTokens;
       onTranslateChunk({
         chunk: sc.content,
         done: false,
-        stats: { charsReceived: totalChars, tokensUsed },
+        stats: { charsReceived: totalChars, completionTokens, promptTokens },
       });
     }
 

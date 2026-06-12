@@ -30,20 +30,22 @@ export const FlowTranslate: React.FC = () => {
   const { theme, isDarkMode } = useAppTheme();
   const {
     translation, isTranslating, hasError, startTranslation, resetTranslation, getOriginalInput,
-    elapsedMs, charsReceived, tokensUsed,
+    elapsedMs, charsReceived, completionTokens, promptTokens,
   } = useTranslation();
 
   // Persist last translation summary so it stays visible after completion
   const [lastSummary, setLastSummary] = useState<{
-    chars: number; tokens: number; secs: number;
+    input: number; output: number; total: number; secs: number;
   } | null>(null);
   const prevTranslatingRef = useRef(isTranslating);
   useEffect(() => {
     if (prevTranslatingRef.current && !isTranslating && charsReceived > 0 && !hasError) {
-      setLastSummary({ chars: charsReceived, tokens: tokensUsed ?? Math.round(charsReceived / 4), secs: elapsedMs / 1000 });
+      const inputTk = promptTokens ?? 0;
+      const outputTk = completionTokens ?? Math.round(charsReceived / 4);
+      setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
     }
     prevTranslatingRef.current = isTranslating;
-  }, [isTranslating, charsReceived, tokensUsed, elapsedMs, hasError]);
+  }, [isTranslating, charsReceived, completionTokens, promptTokens, elapsedMs, hasError]);
 
   const {
     mode, activeId, showingSide, historyList, activeContent,
@@ -266,7 +268,7 @@ export const FlowTranslate: React.FC = () => {
                 {charsReceived}<span className="ml-0.5 text-[9px] text-gray-400">ch</span>
               </span>
               <span className="tabular-nums text-blue-500">
-                {tokensUsed !== undefined ? tokensUsed : `~${Math.max(1, Math.round(charsReceived / 4))}`}<span className="ml-0.5 text-[9px] text-gray-400">tk</span>
+                {completionTokens !== undefined ? completionTokens : `~${Math.max(1, Math.round(charsReceived / 4))}`}<span className="ml-0.5 text-[9px] text-gray-400">tk</span>
               </span>
             </div>
           ) : mode === 'history' && activeId !== null ? (
@@ -348,7 +350,7 @@ export const FlowTranslate: React.FC = () => {
               </div>
               {lastSummary && (
                 <div className="mt-0.5 border-t border-black/5 pt-0.5 font-mono text-[10px] text-gray-400 dark:border-white/5 dark:text-white/25">
-                  last  {lastSummary.chars} chars  {lastSummary.tokens} tokens  {lastSummary.secs.toFixed(2)}s
+                  last  {lastSummary.input} input tokens  {lastSummary.output} output tokens  {lastSummary.total} total tokens  {lastSummary.secs.toFixed(2)}s
                 </div>
               )}
             </div>
