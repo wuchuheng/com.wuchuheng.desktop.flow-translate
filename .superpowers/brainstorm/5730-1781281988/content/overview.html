@@ -1,0 +1,84 @@
+<h2>History Feature — Understanding Check</h2>
+<p class="subtitle">Here's how I understand the feature from your description. Let me know if this matches your vision.</p>
+
+<div class="section">
+  <h3>1. Data Layer</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h3>SQLite Table</h3>
+        <p>New <code>transaction</code> table with columns: <code>id</code> (auto-increment), <code>createdAt</code>, <code>updatedAt</code></p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h3>JSON Files</h3>
+        <p>Each record gets a file: <code>storage/transaction/&lt;id&gt;.json</code></p>
+        <p>Content: <code>{input, transaction, createdAt, updatedAt}</code></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. Translation Flow</h3>
+  <div class="mockup">
+    <div class="mockup-header">Submit → Save → AI → Update</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p>1. User types text and presses <strong>Enter</strong></p>
+      <p>2. <strong>Before</strong> calling AI: create DB record + JSON file with <code>input</code> only</p>
+      <p>3. AI streams translation chunks (same as now)</p>
+      <p>4. When AI finishes: update the <code>.json</code> file with <code>transaction</code> result</p>
+      <p>5. If AI <strong style="color:var(--danger)">errors</strong>: restore input box content to original text</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>3. History Navigation (Ctrl+↑/↓)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Navigation State Machine</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p><strong>"latest"</strong> = current unsaved input (not in history)</p>
+      <p><strong>Ctrl+↑</strong> from "latest" → cache current input, load newest history item</p>
+      <p><strong>Ctrl+↑/↓</strong> in history → navigate prev/next items (no AI call needed)</p>
+      <p><strong>Ctrl+↓</strong> past newest → back to "latest" → restore cached input, normal mode</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>4. Enter Toggle (in History Mode)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Toggle between Input ↔ Result</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p>When viewing a history item, <strong>Enter</strong> toggles between:</p>
+      <p style="margin-left:20px">📝 Original input text</p>
+      <p style="margin-left:20px">🤖 AI translation result</p>
+      <p>A <mark>badge/indicator</mark> shows you're in history mode</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Key Question: Naming</h3>
+  <p class="subtitle">You mentioned both "transaction" and "history" — which should we use?</p>
+  <div class="options">
+    <div class="option" data-choice="history" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>"history"</h3>
+        <p>Table: <code>history</code>, Files: <code>storage/history/&lt;id&gt;.json</code></p>
+        <p>More intuitive — matches what the feature does</p>
+      </div>
+    </div>
+    <div class="option" data-choice="transaction" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>"transaction"</h3>
+        <p>Table: <code>transaction</code>, Files: <code>storage/transaction/&lt;id&gt;.json</code></p>
+        <p>Keeps your original naming</p>
+      </div>
+    </div>
+  </div>
+</div>

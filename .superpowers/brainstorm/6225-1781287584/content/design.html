@@ -1,0 +1,72 @@
+<h2>Layout Fix — Design</h2>
+<p class="subtitle">Changes to <code>FlowTranslate.tsx</code> and <code>useAutoResize.ts</code></p>
+
+<div class="section">
+  <h3>1. Fix the flex layout (FlowTranslate.tsx)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Remove field-sizing:content, properly constrain textarea</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6">
+      <p><strong>Textarea CSS changes:</strong></p>
+      <p style="font-family:monospace;margin-left:16px">Remove: <code>[field-sizing:content]</code></p>
+      <p style="font-family:monospace;margin-left:16px">Add: <code>flex-1 min-h-0</code> (fills available space, allows shrinking)</p>
+      <p style="font-family:monospace;margin-left:16px">Keep: <code>overflow-y-auto</code> (already present, will now actually work)</p>
+      <p style="margin-top:8px"><strong>Parent container:</strong></p>
+      <p style="font-family:monospace;margin-left:16px">The inner flex container already has <code>flex flex-col</code> — correct</p>
+      <p style="font-family:monospace;margin-left:16px">Footer already has <code>flex-none</code> — correct, stays pinned to bottom</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. Auto-scroll during AI streaming (new useEffect)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Scroll textarea to bottom when new chunks arrive</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6;font-family:monospace">
+      <p>useEffect(() => {</p>
+      <p>&nbsp;&nbsp;if (isTranslating && textareaRef.current) {</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;textareaRef.current.scrollTop = textareaRef.current.scrollHeight;</p>
+      <p>&nbsp;&nbsp;}</p>
+      <p>}, [translation, isTranslating]);</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>3. Adjust max height (useAutoResize)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Current call in FlowTranslate</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6;font-family:monospace">
+      <p>useAutoResize(containerRef, { minHeight: 100, maxHeight: 600 });</p>
+      <p style="margin-top:4px;color:var(--muted)">Keep 600px max. Once the textarea hits scroll threshold,</p>
+      <p style="color:var(--muted)">the internal overflow-y-auto takes over. Footer stays pinned.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Files changed</h3>
+  <table style="width:100%;font-size:12px;border-collapse:collapse">
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:6px">File</th>
+      <th style="text-align:left;padding:6px">Change</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px;font-family:monospace">FlowTranslate.tsx</td>
+      <td style="padding:6px">Textarea: remove field-sizing:content, add flex-1 min-h-0. Add auto-scroll useEffect.</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Approve?</h3>
+  <div class="options">
+    <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Looks good, write the spec</h3></div>
+    </div>
+    <div class="option" data-choice="fix" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Needs changes</h3></div>
+    </div>
+  </div>
+</div>

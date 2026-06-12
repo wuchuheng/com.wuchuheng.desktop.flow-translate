@@ -36,6 +36,16 @@ export type ChatRequest = {
   providerId?: string;
 };
 
+/** Per-chunk data from SSE stream */
+export type StreamChunk = {
+  content: string;
+  /** Token usage reported by the API (may only appear in final chunk) */
+  usage?: {
+    promptTokens?: number;
+    completionTokens?: number;
+  };
+};
+
 /**
  * Provider parser interface
  * Each parser handles API communication for a specific provider type
@@ -54,9 +64,9 @@ export interface AiProviderParser {
    * @param baseUrl - API base URL
    * @param apiKey - API key
    * @param request - Normalized chat request
-   * @yields Content chunks as they arrive
+   * @yields Content chunks with optional usage stats as they arrive
    */
-  streamChat(baseUrl: string, apiKey: string, request: ChatRequest): AsyncGenerator<string>;
+  streamChat(baseUrl: string, apiKey: string, request: ChatRequest): AsyncGenerator<StreamChunk>;
 
   /**
    * Set keep-alive for a model (Ollama only)

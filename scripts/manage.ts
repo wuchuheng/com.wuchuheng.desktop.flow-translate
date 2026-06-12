@@ -18,10 +18,30 @@ function run(cmd: string): ChildProcess {
 
 async function execute() {
   switch (command) {
-    case 'dev':
+    case 'dev': {
       execSync('npm run ipc:sync', { stdio: 'inherit', env });
+
+      // Kill any process holding the Vite dev server port
+      if (process.platform === 'win32') {
+        try {
+          execSync(
+            `powershell -Command "$p = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty OwningProcess; if ($p) { Stop-Process -Id $p -Force; Write-Host 'Killed process on port 5173 (PID:' $p ')' }"`,
+            { stdio: 'inherit' }
+          );
+        } catch {
+          /* ignore */
+        }
+      } else {
+        try {
+          execSync('lsof -ti:5173 | xargs kill -9 2>/dev/null; echo "Cleared port 5173"', { stdio: 'ignore' });
+        } catch {
+          /* ignore */
+        }
+      }
+
       run('electron-vite dev -w');
       break;
+    }
 
     case 'build':
       console.log('🏗️  Building production assets...');

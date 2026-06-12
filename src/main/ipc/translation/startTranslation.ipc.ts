@@ -4,16 +4,32 @@ import { pasteText, restorePreviousWindow } from '../../utils/win-api-helper';
 import { BrowserWindow } from 'electron';
 import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
+import { createHistory, updateTransaction } from '../../database/repositories/history.repository';
 import { PARSERS, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
 import { getProviderById, getBaseUrl } from '@/shared/ai-helper';
 import type { ChatRequest } from '@/shared/types';
 
-export const onTranslateChunk = createEvent<{ chunk: string; done: boolean; isError?: boolean }>();
+export type TranslateChunkPayload = {
+  chunk: string;
+  done: boolean;
+  isError?: boolean;
+  stats?: {
+    charsReceived: number;
+    completionTokens?: number;
+    promptTokens?: number;
+  };
+};
+
+export const onTranslateChunk = createEvent<TranslateChunkPayload>();
 
 const startTranslation = async (payload: { text: string; backspaceCount: number; closeAfter?: boolean }) => {
   const { text, closeAfter = true } = payload;
 
+  let historyId: number | null = null;
   try {
+    // 1. Create history record before AI call
+    historyId = await createHistory(text);
+
     const repo = getDataSource().getRepository(Config);
     const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.AI });
     const config = (configEntity?.value || {}) as AiConfig;
@@ -45,12 +61,27 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     };
 
     let fullTranslation = '';
-    for await (const chunk of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
-      fullTranslation += chunk;
-      onTranslateChunk({ chunk, done: false });
+    let totalChars = 0;
+    let completionTokens: number | undefined;
+    let promptTokens: number | undefined;
+    for await (const sc of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
+      fullTranslation += sc.content;
+      totalChars += sc.content.length;
+      if (sc.usage?.completionTokens !== undefined) completionTokens = sc.usage.completionTokens;
+      if (sc.usage?.promptTokens !== undefined) promptTokens = sc.usage.promptTokens;
+      onTranslateChunk({
+        chunk: sc.content,
+        done: false,
+        stats: { charsReceived: totalChars, completionTokens, promptTokens },
+      });
     }
 
     onTranslateChunk({ chunk: '', done: true });
+
+    // 2. Update history with transaction result
+    if (historyId !== null) {
+      await updateTransaction(historyId, fullTranslation);
+    }
 
     if (closeAfter) {
       const wins = BrowserWindow.getAllWindows();

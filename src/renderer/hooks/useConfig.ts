@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 
+/**
+ * Reactive persisted config. Loads from main process on mount,
+ * provides a `saveConfig` that persists to the database.
+ *
+ * @typeParam T - The shape of the config value
+ * @param key - Config key in the database
+ * @param defaultValue - Fallback when no persisted value exists
+ */
 export const useConfig = <T>(key: string, defaultValue: T) => {
   const [config, setConfig] = useState<T>(defaultValue);
   const [loading, setLoading] = useState(true);

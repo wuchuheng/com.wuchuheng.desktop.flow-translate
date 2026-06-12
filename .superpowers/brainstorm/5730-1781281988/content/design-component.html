@@ -1,0 +1,67 @@
+<h2>Design — Section 5: Component Changes + Footer</h2>
+<p class="subtitle">Modifying <code>FlowTranslate.tsx</code></p>
+
+<div class="section">
+  <h3>Hook wiring (replaces current useState + useTranslation)</h3>
+  <div class="mockup">
+    <div class="mockup-header">New imports and state</div>
+    <div class="mockup-body" style="font-size:11px;line-height:1.6;font-family:monospace">
+      <p>const { translation, isTranslating, hasError, startTranslation, resetTranslation } = useTranslation();</p>
+      <p>const { mode, activeId, showingSide, navigateUp, navigateDown, toggleSide,</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;submitHistory, submitHistoryKeepOpen, setLatestText, commitLatestAsHistory } = useHistory();</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Footer status bar (replaces current footer during history mode)</h3>
+  <div class="mockup">
+    <div class="mockup-header">When mode === "history"</div>
+    <div class="mockup-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 12px;background:var(--surface);border-radius:8px">
+        <span style="color:#f59e0b;font-weight:600">History #{activeId} of {list.length} — 📝 Input</span>
+        <span style="color:var(--muted)">Ctrl+← toggle · Ctrl+↑↓ navigate · Enter to copy</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Textarea value logic</h3>
+  <div class="mockup">
+    <div class="mockup-header">What gets displayed in the textarea</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.8">
+      <p><strong>"latest" mode:</strong> current user input (as today)</p>
+      <p><strong>"history" mode, showingSide="input":</strong> history item's <code>input</code> field</p>
+      <p><strong>"history" mode, showingSide="transaction":</strong> history item's <code>transaction</code> field</p>
+      <p style="color:var(--muted);margin-top:8px">When mode="history", textarea is read-only (edits switch to "latest")</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Error recovery</h3>
+  <div class="mockup">
+    <div class="mockup-header">Modified: useTranslation error handling</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6">
+      <p>When AI responds with HTTP error:</p>
+      <p style="margin-left:16px">1. Show error message in input box (existing behavior)</p>
+      <p style="margin-left:16px">2. <strong>Restore input to original text</strong> (new — the history record still has the original input)</p>
+      <p style="margin-left:16px">3. History record stays as "pending" (transaction empty)</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Everything look correct?</h3>
+  <div class="options">
+    <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Looks good</h3></div>
+    </div>
+    <div class="option" data-choice="fix" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Needs changes</h3></div>
+    </div>
+  </div>
+</div>

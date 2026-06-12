@@ -1,0 +1,47 @@
+<h2>Updated Key Bindings — Confirming Understanding</h2>
+<p class="subtitle">Here's the revised behavior for both modes.</p>
+
+<div class="section">
+  <h3>Normal Mode ("latest" — current input)</h3>
+  <div class="mockup">
+    <div class="mockup-header" style="background:var(--primary);color:white">Active: Fresh Input</div>
+    <div class="mockup-body" style="font-size:14px;line-height:2">
+      <p><strong>Enter</strong> → 🤖 AI translate → copy result → close window</p>
+      <p><strong>Ctrl+Enter</strong> → 🤖 AI translate → keep window open</p>
+      <p><strong>Ctrl+↑</strong> → cache current input → load newest history</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>History Mode (viewing a past item)</h3>
+  <div class="mockup">
+    <div class="mockup-header" style="background:#f59e0b;color:white">Active: History #3 — Showing Input</div>
+    <div class="mockup-body" style="font-size:14px;line-height:2">
+      <p><strong>Ctrl+←</strong> → toggle between 📝 input ↔ 🤖 result display</p>
+      <p><strong>Enter</strong> → 📋 copy stored <em>result</em> → close (no AI call)</p>
+      <p><strong>Ctrl+Enter</strong> → 📋 copy stored <em>result</em> → keep open (no AI call)</p>
+      <p><strong>Ctrl+↑/↓</strong> → navigate prev/next history item</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Quick confirmation</h3>
+  <div class="options">
+    <div class="option" data-choice="correct" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Looks correct</h3>
+        <p>This is what I meant</p>
+      </div>
+    </div>
+    <div class="option" data-choice="wrong" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content">
+        <h3>Needs adjustment</h3>
+        <p>Something is off — I'll explain in terminal</p>
+      </div>
+    </div>
+  </div>
+</div>

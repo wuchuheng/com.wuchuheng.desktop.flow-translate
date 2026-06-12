@@ -1,0 +1,70 @@
+<h2>Editing History → Auto-save + Lazy Translation</h2>
+<p class="subtitle">Refined flow based on your description. Two intertwined behaviors.</p>
+
+<div class="section">
+  <h3>Behavior 1: Editing a history item</h3>
+  <div class="mockup">
+    <div class="mockup-header">When user types while viewing history</div>
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+      <p>1. User at <strong>"latest"</strong> has typed text (not yet submitted)</p>
+      <p>2. User presses <strong>Ctrl+↑</strong> → cache latest text, show history #3</p>
+      <p>3. User <strong>edits</strong> the history text → the edited text becomes new <strong>"latest"</strong></p>
+      <p>4. The <strong>original cached text</strong> gets saved as a new history item (input only, no transaction)</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Behavior 2: Lazy AI translation on demand</h3>
+  <div class="mockup">
+    <div class="mockup-header">Actions that check if transaction is empty</div>
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+      <p><strong>Enter / Ctrl+Enter</strong> in history mode:</p>
+      <p style="margin-left:20px;color:var(--muted)">→ If transaction exists → copy it (no AI)</p>
+      <p style="margin-left:20px;color:var(--muted)">→ If transaction is <em>empty</em> → 🤖 call AI, then copy</p>
+      <p style="margin-top:8px"><strong>Ctrl+← / Ctrl+→</strong> toggling to transaction side:</p>
+      <p style="margin-left:20px;color:var(--muted)">→ If transaction exists → show it</p>
+      <p style="margin-left:20px;color:var(--muted)">→ If transaction is <em>empty</em> → 🤖 call AI, stream result</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>History item states</h3>
+  <div class="cards">
+    <div class="card" data-choice="partial" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Pending</h3>
+        <p><code>input: "hello"</code></p>
+        <p><code>transaction: null</code></p>
+        <p style="color:#f59e0b">Needs translation when triggered</p>
+      </div>
+    </div>
+    <div class="card" data-choice="complete" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Complete</h3>
+        <p><code>input: "hello"</code></p>
+        <p><code>transaction: "你好"</code></p>
+        <p style="color:var(--success)">Ready to copy instantly</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Does this look right?</h3>
+  <div class="options">
+    <div class="option" data-choice="correct" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Yes, that's it</h3>
+      </div>
+    </div>
+    <div class="option" data-choice="wrong" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content">
+        <h3>Something's off</h3>
+      </div>
+    </div>
+  </div>
+</div>

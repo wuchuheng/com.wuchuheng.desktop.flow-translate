@@ -16,12 +16,19 @@ type IpcModules = {
   grammarly: {
     openAuth: typeof import('../main/ipc/grammarly/openAuth.ipc').default;
   };
+  history: {
+    create: typeof import('../main/ipc/history/create.ipc').default;
+    getAll: typeof import('../main/ipc/history/getAll.ipc').default;
+    getById: typeof import('../main/ipc/history/getById.ipc').default;
+    updateTransaction: typeof import('../main/ipc/history/updateTransaction.ipc').default;
+  };
   system: {
     bootloading: typeof import('../main/ipc/system/bootloading.ipc').default;
     copyAndPaste: typeof import('../main/ipc/system/copyAndPaste.ipc').default;
     getAppInfo: typeof import('../main/ipc/system/getAppInfo.ipc').default;
     getBootloadProgressing: typeof import('../main/ipc/system/getBootloadProgressing.ipc').default;
     reloadHotkeys: typeof import('../main/ipc/system/reloadHotkeys.ipc').default;
+    restart: typeof import('../main/ipc/system/restart.ipc').default;
   };
   translation: {
     onTranslateChunk: typeof import('../main/ipc/translation/onTranslateChunk.ipc').default;

@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { logger } from '../utils/logger';
 import { Welcome } from './entities/welcome.entity';
 import { Config } from './entities/config.entity';
+import { History } from './entities/history.entity';
 import { seedDatabase } from './seed';
 import { getPaths } from '../utils/path.util';
 
@@ -34,7 +35,7 @@ export const initDB = async (): Promise<void> => {
       type: 'better-sqlite3',
       driver: sqlite3, // Explicitly inject the driver
       database: dbPath,
-      entities: [Welcome, Config],
+      entities: [Welcome, Config, History],
       subscribers: [],
       synchronize: true,
       logging: isDev,

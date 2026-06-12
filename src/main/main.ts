@@ -163,8 +163,7 @@ export const registerGlobalShortcut = async () => {
         const display = screen.getDisplayNearestPoint(cursorPoint);
         const windowBounds = floatingWindow.getBounds();
         const x = Math.round(display.bounds.x + (display.bounds.width - windowBounds.width) / 2);
-        const bottomMargin = Math.round(display.bounds.height * 0.2);
-        const y = Math.round(display.bounds.y + display.bounds.height - windowBounds.height - bottomMargin);
+        const y = Math.round(display.bounds.y + (display.bounds.height - windowBounds.height) / 2);
 
         floatingWindow.setPosition(x, y);
         floatingWindow.show();
@@ -190,29 +189,34 @@ app.on('ready', async () => {
     // 1. Initialize Tray
     createTray(getMainWindow, recreateMainWindow);
 
-    // 2.1 Create the main window
-    mainWindow = await createWindow();
+    // 2. Bootload the application (DB must be ready before reading config)
+    registerBootTask({ title: 'Initializing Database ...', load: initDB });
+    await runBootTasks();
+
+    // 3. Read app config to determine extension loading
+    const configRepo = getDataSource().getRepository(Config);
+    const configEntity = await configRepo.findOneBy({ key: CONFIG_KEYS.APP });
+    const appConfig = (configEntity?.value as AppConfig) ?? DEFAULT_APP_CONFIG;
+
+    // 4.1 Create the main window
+    mainWindow = await createWindow(appConfig.extensionEnabled);
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
 
-    // 2.2 Create floating window (hidden by default)
+    // 4.2 Create floating window (hidden by default)
     floatingWindow = await createFloatingWindow();
 
-    // 2.3 Setup all IPC handlers
+    // 4.3 Setup all IPC handlers
     setupAllIpcHandlers();
 
-    // 2.4 Initialize Update Service
+    // 4.4 Initialize Update Service
     initUpdateService();
     checkForUpdates().catch(err => {
       logger.error('Initial update check failed:', err);
     });
 
-    // 2.5 Bootload the application
-    registerBootTask({ title: 'Initializing Database ...', load: initDB });
-    await runBootTasks();
-
-    // 2.6 Register global shortcut after DB is ready
+    // 4.5 Register global shortcut after DB is ready
     await registerGlobalShortcut();
   } catch (error) {
     logger.error(`Startup failed: ${error instanceof Error ? error.message : String(error)}`);

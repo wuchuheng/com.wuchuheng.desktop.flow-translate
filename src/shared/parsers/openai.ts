@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { Stream } from 'openai/streaming';
 import type { ChatCompletionChunk } from 'openai/resources/chat/completions';
-import type { AiProviderParser, ChatRequest } from '../types';
+import type { AiProviderParser, ChatRequest, StreamChunk } from '../types';
 import { addThinkingArgument, cleanModelName } from '../ai-helper';
 
 /**
@@ -27,7 +27,7 @@ export const openaiParser: AiProviderParser = {
     return list.data.map(m => m.id);
   },
 
-  async *streamChat(baseUrl: string, apiKey: string, request: ChatRequest): AsyncGenerator<string> {
+  async *streamChat(baseUrl: string, apiKey: string, request: ChatRequest): AsyncGenerator<StreamChunk> {
     const client = createClient(baseUrl, apiKey);
 
     // OpenAI APIs use model name without tag suffix (e.g., "gpt-4" not "gpt-4:latest")
@@ -37,12 +37,19 @@ export const openaiParser: AiProviderParser = {
       model,
       messages: request.messages,
       stream: true,
+      stream_options: { include_usage: true },
       ...addThinkingArgument({}, model, request.providerId, request.enableThinking),
     })) as Stream<ChatCompletionChunk>;
 
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
-      if (content) yield content;
+      const usage = chunk.usage
+        ? {
+            promptTokens: chunk.usage.prompt_tokens,
+            completionTokens: chunk.usage.completion_tokens,
+          }
+        : undefined;
+      if (content || usage) yield { content, usage };
     }
   },
 };
