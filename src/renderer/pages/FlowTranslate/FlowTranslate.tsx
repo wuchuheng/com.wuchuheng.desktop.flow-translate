@@ -354,16 +354,14 @@ export const FlowTranslate: React.FC = () => {
                   </div>
                 </div>
               )}
-              {lastSummary ? (
-                <div className="flex items-center justify-between font-mono text-[10px] text-gray-400 dark:border-white/5 dark:text-white/25">
-                  <span>
-                    last  {lastSummary.input} input tokens  {lastSummary.output} output tokens  {lastSummary.total} total tokens  {lastSummary.secs.toFixed(2)}s
-                  </span>
-                  <span className="ml-2 shrink-0 text-[9px] text-gray-400/60">ctrl+shift+? shortcuts</span>
-                </div>
-              ) : (
-                <div className="text-right text-[9px] text-gray-400/40">ctrl+shift+? shortcuts</div>
-              )}
+              <div className="flex items-center justify-between font-mono text-[10px] text-gray-400 dark:text-white/25">
+                <span>
+                  {lastSummary
+                    ? `last  ${lastSummary.input} input tokens  ${lastSummary.output} output tokens  ${lastSummary.total} total tokens  ${lastSummary.secs.toFixed(2)}s`
+                    : '\u00A0'}
+                </span>
+                <span className="ml-2 shrink-0 text-[9px] text-gray-400/50">ctrl+shift+? shortcuts</span>
+              </div>
             </div>
           )}
         </div>
