@@ -29,8 +29,16 @@ export const FlowTranslate: React.FC = () => {
 
   const { theme, isDarkMode } = useAppTheme();
   const {
-    translation, isTranslating, hasError, startTranslation, resetTranslation, getOriginalInput,
-    elapsedMs, charsReceived, completionTokens, promptTokens,
+    translation,
+    isTranslating,
+    hasError,
+    startTranslation,
+    resetTranslation,
+    getOriginalInput,
+    elapsedMs,
+    charsReceived,
+    completionTokens,
+    promptTokens,
   } = useTranslation();
 
   // Footer shortcuts visibility (collapsed by default)
@@ -38,7 +46,10 @@ export const FlowTranslate: React.FC = () => {
 
   // Persist last translation summary so it stays visible after completion
   const [lastSummary, setLastSummary] = useState<{
-    input: number; output: number; total: number; secs: number;
+    input: number;
+    output: number;
+    total: number;
+    secs: number;
   } | null>(null);
   const wasTranslatingRef = useRef(false);
   useEffect(() => {
@@ -51,27 +62,40 @@ export const FlowTranslate: React.FC = () => {
   }, [isTranslating, hasError, charsReceived, completionTokens, promptTokens, elapsedMs]);
 
   const {
-    mode, activeId, showingSide, historyList, activeContent,
-    navigate, toggleSide, onEditInHistory, cacheLatest, getCachedLatest,
-    isTransactionEmpty, getTextareaValue, resetToLatest,
+    mode,
+    activeId,
+    showingSide,
+    historyList,
+    activeContent,
+    navigate,
+    toggleSide,
+    onEditInHistory,
+    cacheLatest,
+    getCachedLatest,
+    isTransactionEmpty,
+    getTextareaValue,
+    resetToLatest,
   } = useHistory();
 
   // Handle Enter in history mode: copy stored result, lazy AI if empty
-  const handleHistorySubmit = useCallback((closeWindow: boolean) => {
-    if (activeContent?.transaction) {
-      // Transaction exists — copy directly
-      window.electron.system.copyAndPaste(activeContent.transaction);
-      if (closeWindow) {
-        window.electron.window.hide();
+  const handleHistorySubmit = useCallback(
+    (closeWindow: boolean) => {
+      if (activeContent?.transaction) {
+        // Transaction exists — copy directly
+        window.electron.system.copyAndPaste(activeContent.transaction);
+        if (closeWindow) {
+          window.electron.window.hide();
+        }
+      } else if (activeContent?.input && isTransactionEmpty()) {
+        // Lazy AI: transaction is empty, translate first then copy
+        const text = activeContent.input;
+        resetToLatest();
+        setInput(text);
+        startTranslation(text, closeWindow);
       }
-    } else if (activeContent?.input && isTransactionEmpty()) {
-      // Lazy AI: transaction is empty, translate first then copy
-      const text = activeContent.input;
-      resetToLatest();
-      setInput(text);
-      startTranslation(text, closeWindow);
-    }
-  }, [activeContent, isTransactionEmpty, startTranslation, resetToLatest]);
+    },
+    [activeContent, isTransactionEmpty, startTranslation, resetToLatest]
+  );
 
   // Handle toggle to transaction side that's empty → lazy AI
   const handleToggleSide = useCallback(() => {
@@ -84,18 +108,21 @@ export const FlowTranslate: React.FC = () => {
     }
   }, [toggleSide, isTransactionEmpty, activeContent, startTranslation, resetToLatest]);
 
-  const submitTranslation = useCallback((closeWindow: boolean = false) => {
-    if (mode === 'history') {
-      handleHistorySubmit(closeWindow);
-      return;
-    }
-    if (input.trim() && !isTranslating) {
-      startTranslation(input.trim(), closeWindow);
-      if (closeWindow) {
-        setInput('');
+  const submitTranslation = useCallback(
+    (closeWindow: boolean = false) => {
+      if (mode === 'history') {
+        handleHistorySubmit(closeWindow);
+        return;
       }
-    }
-  }, [mode, input, isTranslating, startTranslation, handleHistorySubmit]);
+      if (input.trim() && !isTranslating) {
+        startTranslation(input.trim(), closeWindow);
+        if (closeWindow) {
+          setInput('');
+        }
+      }
+    },
+    [mode, input, isTranslating, startTranslation, handleHistorySubmit]
+  );
 
   // Wire shortcuts with history callbacks
   const { handleKeyDown } = useShortcuts(
@@ -104,7 +131,7 @@ export const FlowTranslate: React.FC = () => {
     {
       onSubmit: submitTranslation,
       onClose: () => window.electron.window.hide(),
-      onNavigate: (dir) => {
+      onNavigate: dir => {
         if (dir === 'up') {
           if (input.trim()) {
             cacheLatest(input);
@@ -123,9 +150,7 @@ export const FlowTranslate: React.FC = () => {
   );
 
   // determine the textarea value
-  const textareaValue = mode === 'latest'
-    ? (isTranslating ? translation : input)
-    : getTextareaValue(input);
+  const textareaValue = mode === 'latest' ? (isTranslating ? translation : input) : getTextareaValue(input);
 
   // When translation streams, populate the input
   useEffect(() => {
@@ -147,7 +172,7 @@ export const FlowTranslate: React.FC = () => {
     const ta = textareaRef.current;
     if (!ta) return;
 
-    const FOOTER_RESERVE = 115;
+    const FOOTER_RESERVE = 130;
     const MIN_WIN = 100;
     const MAX_WIN = 400;
 
@@ -209,22 +234,23 @@ export const FlowTranslate: React.FC = () => {
   }, [resetTranslation, resetToLatest]);
 
   // Handle edits in history mode
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    if (mode === 'history') {
-      onEditInHistory();
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      if (mode === 'history') {
+        onEditInHistory();
+        setInput(newValue);
+        return;
+      }
       setInput(newValue);
-      return;
-    }
-    setInput(newValue);
-  }, [mode, onEditInHistory]);
+    },
+    [mode, onEditInHistory]
+  );
 
   const dynamicBgStyle = { backgroundColor: hexToRgba(theme.backgroundColor, theme.opacity) };
 
   return (
-    <div
-      className={`w-full font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}
-    >
+    <div className={`w-full font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}>
       <style>{SCROLLBAR_STYLES}</style>
       <div
         className="flex w-full flex-col rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
@@ -262,27 +288,32 @@ export const FlowTranslate: React.FC = () => {
           )}
         </div>
 
-        <div className={`flex flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40 ${showShortcuts ? 'min-h-[60px] py-1.5' : 'min-h-0 py-0.5'}`}>
+        <div
+          className={`flex flex-none items-center justify-between border-t border-black/5 bg-black/[0.02] px-3 text-[11px] font-medium text-gray-400 dark:border-white/5 dark:bg-white/5 dark:text-white/40 ${showShortcuts ? 'min-h-[60px] py-1.5' : 'min-h-0 py-0.5'}`}
+        >
           {isTranslating ? (
             <div className="flex w-full items-center justify-center gap-6 py-1 font-mono text-[11px] tracking-tight">
               <span className="tabular-nums text-blue-500">
-                {(elapsedMs / 1000).toFixed(2)}<span className="ml-0.5 text-[9px] text-gray-400">s</span>
+                {(elapsedMs / 1000).toFixed(2)}
+                <span className="ml-0.5 text-[9px] text-gray-400">s</span>
               </span>
               <span className="tabular-nums text-blue-500">
-                {charsReceived}<span className="ml-0.5 text-[9px] text-gray-400">ch</span>
+                {charsReceived}
+                <span className="ml-0.5 text-[9px] text-gray-400">ch</span>
               </span>
               <span className="tabular-nums text-blue-500">
-                {completionTokens !== undefined ? completionTokens : `~${Math.max(1, Math.round(charsReceived / 4))}`}<span className="ml-0.5 text-[9px] text-gray-400">tk</span>
+                {completionTokens !== undefined ? completionTokens : `~${Math.max(1, Math.round(charsReceived / 4))}`}
+                <span className="ml-0.5 text-[9px] text-gray-400">tk</span>
               </span>
             </div>
           ) : mode === 'history' && activeId !== null ? (
             <div className="flex w-full items-center justify-between px-1">
               <span className="text-[11px] font-semibold text-amber-500">
-                History #{activeId}{historyList.length > 0 ? ` of ${historyList.length}` : ''} — {showingSide === 'input' ? 'Input' : 'Translation'}
+                History #{activeId}
+                {historyList.length > 0 ? ` of ${historyList.length}` : ''} —{' '}
+                {showingSide === 'input' ? 'Input' : 'Translation'}
               </span>
-              <span className="text-[10px] opacity-50">
-                Ctrl+← toggle · Ctrl+↑↓ navigate · Enter to copy
-              </span>
+              <span className="text-[10px] opacity-50">Ctrl+← toggle · Ctrl+↑↓ navigate · Enter to copy</span>
             </div>
           ) : (
             <div className="flex w-full flex-col">
@@ -298,6 +329,13 @@ export const FlowTranslate: React.FC = () => {
                       <span className="mx-0.5 text-[10px] opacity-40">+</span>
                       <Key title="Enter">Enter</Key>
                       <span className="ml-0.5 transition-colors hover:text-blue-400">translate only</span>
+                    </div>
+
+                    <div className="flex items-center">
+                      <Key title="Ctrl">Ctrl</Key>
+                      <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                      <Key title="U">U</Key>
+                      <span className="ml-0.5 transition-colors hover:text-blue-400">clear to start</span>
                     </div>
                   </div>
 

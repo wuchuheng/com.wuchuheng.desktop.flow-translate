@@ -73,6 +73,27 @@ export const useShortcuts = (
       return;
     }
 
+    // Ctrl/Cmd+U: Delete from cursor to beginning
+    if (e.key === 'u' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!input) return;
+
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const pos = textarea.selectionStart;
+      if (pos === 0) return;
+
+      const newText = input.slice(pos);
+      setInput(newText);
+      requestAnimationFrame(() => {
+        textarea.setSelectionRange(0, 0);
+      });
+      return;
+    }
+
     // Escape: Close window
     if (e.key === 'Escape') {
       e.preventDefault();
