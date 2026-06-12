@@ -42,9 +42,11 @@ export const FlowTranslate: React.FC = () => {
   } | null>(null);
   const wasTranslatingRef = useRef(false);
   useEffect(() => {
+    console.log('[summary] effect:', { was: wasTranslatingRef.current, isTranslating, hasError, charsReceived, completionTokens, promptTokens, elapsedMs });
     if (wasTranslatingRef.current && !isTranslating && !hasError && charsReceived > 0) {
       const inputTk = promptTokens ?? 0;
       const outputTk = completionTokens ?? Math.round(charsReceived / 4);
+      console.log('[summary] SET', { inputTk, outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
       setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
     }
     wasTranslatingRef.current = isTranslating;
