@@ -348,7 +348,7 @@ export const FlowTranslate: React.FC = () => {
               </div>
               {lastSummary && (
                 <div className="mt-0.5 border-t border-black/5 pt-0.5 font-mono text-[10px] text-gray-400 dark:border-white/5 dark:text-white/25">
-                  last  {lastSummary.chars}ch  {lastSummary.tokens}tk  {lastSummary.secs.toFixed(2)}s
+                  last  {lastSummary.chars} chars  {lastSummary.tokens} tokens  {lastSummary.secs.toFixed(2)}s
                 </div>
               )}
             </div>
