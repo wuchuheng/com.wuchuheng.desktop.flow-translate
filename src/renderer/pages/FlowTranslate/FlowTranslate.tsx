@@ -360,7 +360,7 @@ export const FlowTranslate: React.FC = () => {
                     ? `last  ${lastSummary.input} input tokens  ${lastSummary.output} output tokens  ${lastSummary.total} total tokens  ${lastSummary.secs.toFixed(2)}s`
                     : '\u00A0'}
                 </span>
-                <span className="ml-2 shrink-0 text-[9px] text-gray-400/70">ctrl+shift+? help</span>
+                <span className="ml-2 shrink-0 text-[9px] text-gray-500 dark:text-white/35">ctrl+shift+? help</span>
               </div>
             </div>
           )}
