@@ -188,6 +188,7 @@ export const FlowTranslate: React.FC = () => {
       app.style.display = 'block';
       app.style.height = '100vh';
       app.style.width = '100vw';
+      app.style.overflow = 'hidden';
       document.title = 'FlowTranslatePopup';
     }
 
