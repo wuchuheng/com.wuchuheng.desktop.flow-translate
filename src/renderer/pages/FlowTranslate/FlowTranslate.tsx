@@ -36,27 +36,19 @@ export const FlowTranslate: React.FC = () => {
   // Footer shortcuts visibility (collapsed by default)
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  // Persist last translation summary so it stays visible after completion.
-  // Capture stats from the most recent chunk-payload values via a ref so we
-  // don't lose them across re-renders.
+  // Persist last translation summary so it stays visible after completion
   const [lastSummary, setLastSummary] = useState<{
     input: number; output: number; total: number; secs: number;
   } | null>(null);
-  const statsRef = useRef({ charsReceived, completionTokens, promptTokens, elapsedMs });
-  statsRef.current = { charsReceived, completionTokens, promptTokens, elapsedMs };
-
-  const prevTranslatingRef = useRef(isTranslating);
+  const wasTranslatingRef = useRef(false);
   useEffect(() => {
-    if (prevTranslatingRef.current && !isTranslating && !hasError) {
-      const s = statsRef.current;
-      if (s.charsReceived > 0) {
-        const inputTk = s.promptTokens ?? 0;
-        const outputTk = s.completionTokens ?? Math.round(s.charsReceived / 4);
-        setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: s.elapsedMs / 1000 });
-      }
+    if (wasTranslatingRef.current && !isTranslating && !hasError && charsReceived > 0) {
+      const inputTk = promptTokens ?? 0;
+      const outputTk = completionTokens ?? Math.round(charsReceived / 4);
+      setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
     }
-    prevTranslatingRef.current = isTranslating;
-  }, [isTranslating, hasError]);
+    wasTranslatingRef.current = isTranslating;
+  }, [isTranslating, hasError, charsReceived, completionTokens, promptTokens, elapsedMs]);
 
   const {
     mode, activeId, showingSide, historyList, activeContent,
