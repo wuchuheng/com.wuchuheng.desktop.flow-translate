@@ -2,12 +2,14 @@ import { app } from 'electron';
 import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
 import { onThemeUpdate } from './onThemeUpdate.ipc';
-import { CONFIG_KEYS, AppConfig } from '@/shared/constants';
+import { CONFIG_KEYS, type AppConfig } from '@/shared/constants';
 import { logger } from '../../utils/logger';
 
-const saveConfig = async (payload: { key: string; value: unknown }) => {
+type ConfigPayload = { key: string; value: unknown };
+
+const saveConfig = async (payload: ConfigPayload) => {
   const repo = getDataSource().getRepository(Config);
-  await repo.save(payload);
+  await repo.save({ key: payload.key, value: payload.value as Config['value'] });
 
   if (payload.key === CONFIG_KEYS.THEME) {
     onThemeUpdate(payload.value);

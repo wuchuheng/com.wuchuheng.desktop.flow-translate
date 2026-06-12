@@ -4,6 +4,7 @@ import { pasteText, restorePreviousWindow } from '../../utils/win-api-helper';
 import { BrowserWindow } from 'electron';
 import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
+import { createHistory, updateTransaction } from '../../database/repositories/history.repository';
 import { PARSERS, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
 import { getProviderById, getBaseUrl } from '@/shared/ai-helper';
 import type { ChatRequest } from '@/shared/types';
@@ -13,7 +14,11 @@ export const onTranslateChunk = createEvent<{ chunk: string; done: boolean; isEr
 const startTranslation = async (payload: { text: string; backspaceCount: number; closeAfter?: boolean }) => {
   const { text, closeAfter = true } = payload;
 
+  let historyId: number | null = null;
   try {
+    // 1. Create history record before AI call
+    historyId = await createHistory(text);
+
     const repo = getDataSource().getRepository(Config);
     const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.AI });
     const config = (configEntity?.value || {}) as AiConfig;
@@ -51,6 +56,11 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     }
 
     onTranslateChunk({ chunk: '', done: true });
+
+    // 2. Update history with transaction result
+    if (historyId !== null) {
+      await updateTransaction(historyId, fullTranslation);
+    }
 
     if (closeAfter) {
       const wins = BrowserWindow.getAllWindows();

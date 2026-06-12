@@ -1,0 +1,57 @@
+<h2>Storage Design: Dual Storage?</h2>
+<p class="subtitle">You mentioned both a SQLite table AND JSON files. Let's clarify what each stores.</p>
+
+<div class="section">
+  <h3>What you described</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">SQLite <code>history</code> table</div>
+      <div class="mockup-body" style="font-size:13px;line-height:1.6">
+        <p><code>id</code> — auto-increment</p>
+        <p><code>createdAt</code> — datetime</p>
+        <p><code>updatedAt</code> — datetime</p>
+        <p style="color:var(--muted)"><em>(input & transaction stored in JSON file)</em></p>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">JSON Files <code>storage/history/&lt;id&gt;.json</code></div>
+      <div class="mockup-body" style="font-size:13px;line-height:1.6">
+        <p><code>input</code> — user's original text</p>
+        <p><code>transaction</code> — AI result</p>
+        <p><code>createdAt</code> — human datetime</p>
+        <p><code>updatedAt</code> — human datetime</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Question: Do we need both?</h3>
+  <p class="subtitle">Having both adds complexity. Which approach fits better?</p>
+  <div class="options">
+    <div class="option" data-choice="both" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Both — Keep table + files</h3>
+        <p>DB for querying/indexing, JSON files as the content store</p>
+        <p>Data split across two stores</p>
+      </div>
+    </div>
+    <div class="option" data-choice="db-only" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>DB only — put input & transaction in SQLite</h3>
+        <p>Add <code>input</code> and <code>transaction</code> TEXT columns to the table</p>
+        <p>Simpler — one store, no file I/O, easy queries</p>
+      </div>
+    </div>
+    <div class="option" data-choice="files-only" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Files only — skip the DB table</h3>
+        <p>Just JSON files in <code>storage/history/</code></p>
+        <p>Simplest — but no indexed queries</p>
+      </div>
+    </div>
+  </div>
+</div>

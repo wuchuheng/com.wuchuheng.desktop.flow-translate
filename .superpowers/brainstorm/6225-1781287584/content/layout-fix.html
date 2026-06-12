@@ -1,0 +1,92 @@
+<h2>Floating Window Layout Fix</h2>
+<p class="subtitle">Current problem → Proposed solution</p>
+
+<div class="section">
+  <h3>Current Layout (broken)</h3>
+  <div class="mockup">
+    <div class="mockup-header" style="background:#ef4444">Problem: Footer hidden when content grows</div>
+    <div class="mockup-body">
+      <div style="border:2px dashed #ef4444;padding:12px;border-radius:8px;margin-bottom:8px">
+        <div style="background:var(--surface);min-height:200px;padding:8px;border-radius:4px;position:relative">
+          <span style="font-size:11px;color:var(--muted)">textarea [field-sizing:content]</span>
+          <div style="margin-top:8px;font-size:12px;line-height:1.5">
+            Lots of text here that grows the textarea...<br>
+            More text...<br>Even more text...
+          </div>
+          <div style="position:absolute;bottom:0;right:0;background:#ef4444;color:white;font-size:10px;padding:2px 6px">Overflow hidden!</div>
+        </div>
+      </div>
+      <div style="background:var(--muted);padding:8px;border-radius:4px;opacity:0.3">
+        <span style="font-size:10px">Footer (hidden off-screen)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Proposed Layout (fixed)</h3>
+  <div class="mockup">
+    <div class="mockup-header" style="background:#22c55e">Fix: Flex layout, textarea scrolls, footer always visible</div>
+    <div class="mockup-body">
+      <div style="display:flex;flex-direction:column;height:300px;border:2px dashed #22c55e;border-radius:8px;padding:4px">
+        <div style="flex:1;min-height:0;overflow-y:auto;background:var(--surface);padding:8px;border-radius:4px;margin-bottom:4px">
+          <span style="font-size:11px;color:var(--muted)">textarea flex-1 min-h-0 overflow-y-auto</span>
+          <div style="margin-top:8px;font-size:12px;line-height:1.5">
+            Lots of text here...<br>More text...<br>Even more text...<br>
+            Scrolls instead of pushing footer out!<br>
+            Line 5...<br>Line 6...<br>Line 7...<br>Line 8...
+          </div>
+          <div style="color:#22c55e;font-size:10px;margin-top:4px">↓ Auto-scroll during AI streaming</div>
+        </div>
+        <div style="background:var(--surface);padding:8px;border-radius:4px;font-size:10px;min-height:40px;display:flex;align-items:center;justify-content:center">
+          Footer always visible — keyboard shortcuts
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Changes needed</h3>
+  <table style="width:100%;font-size:12px;border-collapse:collapse">
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:6px">Change</th>
+      <th style="text-align:left;padding:6px">From</th>
+      <th style="text-align:left;padding:6px">To</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">Textarea sizing</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">[field-sizing:content]</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">flex-1 min-h-0</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">Overflow</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">overflow-hidden on parent</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">overflow-y-auto on textarea</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">Footer</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">flex-none (already correct)</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">flex-none (keep)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">Auto-scroll</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">None</td>
+      <td style="padding:6px;font-family:monospace;font-size:10px">scrollTop = scrollHeight on new text</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Does this capture the issue and fix?</h3>
+  <div class="options">
+    <div class="option" data-choice="correct" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Yes, this is the problem</h3></div>
+    </div>
+    <div class="option" data-choice="wrong" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Something's off — I'll explain</h3></div>
+    </div>
+  </div>
+</div>

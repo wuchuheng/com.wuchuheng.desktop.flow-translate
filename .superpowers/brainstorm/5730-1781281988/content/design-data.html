@@ -1,0 +1,57 @@
+<h2>Design — Section 1: Data Model</h2>
+<p class="subtitle">New TypeORM entity + JSON file structure + directory layout.</p>
+
+<div class="section">
+  <h3>New File: <code>src/main/database/entities/history.entity.ts</code></h3>
+  <div class="mockup">
+    <div class="mockup-header">TypeORM Entity</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6;font-family:monospace">
+      <p>@Entity('history')</p>
+      <p>export class History {</p>
+      <p>&nbsp;&nbsp;@PrimaryGeneratedColumn()</p>
+      <p>&nbsp;&nbsp;id: number;</p>
+      <p>&nbsp;&nbsp;@CreateDateColumn({ name: 'created_at' })</p>
+      <p>&nbsp;&nbsp;createdAt: Date;</p>
+      <p>&nbsp;&nbsp;@UpdateDateColumn({ name: 'updated_at' })</p>
+      <p>&nbsp;&nbsp;updatedAt: Date;</p>
+      <p>}</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>JSON File: <code>storage/history/&lt;id&gt;.json</code></h3>
+  <div class="mockup">
+    <div class="mockup-header">Content format</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6;font-family:monospace">
+      <p>{</p>
+      <p>&nbsp;&nbsp;"input": "Hello world",</p>
+      <p>&nbsp;&nbsp;"transaction": "你好世界",</p>
+      <p>&nbsp;&nbsp;"createdAt": "2026-06-13 14:30:00",</p>
+      <p>&nbsp;&nbsp;"updatedAt": "2026-06-13 14:30:05"</p>
+      <p>}</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Changes to existing files</h3>
+  <div style="font-size:14px;line-height:1.8">
+    <p><code>src/main/database/data-source.ts</code> — add <strong>History</strong> to entities array</p>
+    <p><code>src/main/utils/path.util.ts</code> — add <code>history</code> dir to <code>getPaths()</code></p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Does this data model look right?</h3>
+  <div class="options">
+    <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Looks good</h3></div>
+    </div>
+    <div class="option" data-choice="fix" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Needs changes</h3></div>
+    </div>
+  </div>
+</div>

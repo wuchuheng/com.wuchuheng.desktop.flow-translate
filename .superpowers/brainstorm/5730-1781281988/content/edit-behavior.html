@@ -1,0 +1,45 @@
+<h2>Editing While in History Mode</h2>
+<p class="subtitle">If the user types or edits text while viewing a history item, what should happen?</p>
+
+<div class="section">
+  <div class="options">
+    <div class="option" data-choice="auto-switch" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Auto-switch to "latest"</h3>
+        <p>Any edit immediately exits history mode</p>
+        <p>The edited content becomes the new "latest" input</p>
+        <p>Footer badge disappears, back to normal mode</p>
+      </div>
+    </div>
+    <div class="option" data-choice="stay" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Stay in history mode</h3>
+        <p>Editing is read-only ignored (cannot edit history)</p>
+        <p>Or: edits create a modified copy at "latest" while staying on this history item</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Also: What if there's no history yet?</h3>
+  <p class="subtitle">User presses Ctrl+↑ but the history list is empty</p>
+  <div class="options">
+    <div class="option" data-choice="nothing" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Do nothing</h3>
+        <p>Ctrl+↑/↓ silently no-ops when history is empty</p>
+      </div>
+    </div>
+    <div class="option" data-choice="toast" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Show a brief message</h3>
+        <p>Flash "No history yet" somewhere (like the footer)</p>
+      </div>
+    </div>
+  </div>
+</div>

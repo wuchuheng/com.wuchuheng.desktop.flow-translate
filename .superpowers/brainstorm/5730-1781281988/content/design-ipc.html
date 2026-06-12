@@ -1,0 +1,58 @@
+<h2>Design — Section 2: IPC &amp; Main Process</h2>
+<p class="subtitle">New files in <code>src/main/</code> following the existing pattern.</p>
+
+<div class="section">
+  <h3>New files</h3>
+  <div style="font-size:13px;line-height:1.8">
+    <p><code>src/main/database/repositories/history.repository.ts</code></p>
+    <p style="margin-left:20px;color:var(--muted)">— create(), getById(), getAll(order DESC), updateTransaction()</p>
+    <p><code>src/main/ipc/history/create.ipc.ts</code></p>
+    <p style="margin-left:20px;color:var(--muted)">— Creates DB row + writes <code>&lt;id&gt;.json</code> with input text</p>
+    <p><code>src/main/ipc/history/updateTransaction.ipc.ts</code></p>
+    <p style="margin-left:20px;color:var(--muted)">— Updates the <code>transaction</code> field in the JSON file</p>
+    <p><code>src/main/ipc/history/getAll.ipc.ts</code></p>
+    <p style="margin-left:20px;color:var(--muted)">— Returns list of {id, createdAt, updatedAt} for navigation</p>
+    <p><code>src/main/ipc/history/getById.ipc.ts</code></p>
+    <p style="margin-left:20px;color:var(--muted)">— Reads and returns the full JSON content</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>IPC method signatures</h3>
+  <div class="mockup">
+    <div class="mockup-header">Accessible from renderer via window.electron.history.*</div>
+    <div class="mockup-body" style="font-size:11px;line-height:1.6;font-family:monospace">
+      <p>history.create({ input: string }) → { id: number }</p>
+      <p>history.updateTransaction({ id: number, transaction: string }) → void</p>
+      <p>history.getAll() → { id: number, createdAt: string }[]</p>
+      <p>history.getById({ id: number }) → { input, transaction, createdAt, updatedAt }</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Translation flow integration</h3>
+  <div class="mockup">
+    <div class="mockup-header">Modified: startTranslation.ipc.ts</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6">
+      <p>1. <strong>Before</strong> AI call: <code>history.create({ input: text })</code> → get <code>id</code></p>
+      <p>2. Stream AI chunks to renderer (unchanged)</p>
+      <p>3. <strong>After</strong> AI completes: <code>history.updateTransaction({ id, transaction: fullText })</code></p>
+      <p>4. <strong>On error</strong>: send error chunk + restore event (history record stays as "pending")</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Look right?</h3>
+  <div class="options">
+    <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Looks good</h3></div>
+    </div>
+    <div class="option" data-choice="fix" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Needs changes</h3></div>
+    </div>
+  </div>
+</div>

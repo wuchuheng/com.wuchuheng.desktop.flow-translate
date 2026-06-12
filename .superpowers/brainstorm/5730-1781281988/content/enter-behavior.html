@@ -1,0 +1,49 @@
+<h2>Enter Key Behavior — Two Modes</h2>
+<p class="subtitle">Currently Enter = translate + close. In history mode, Enter has a new meaning.</p>
+
+<div class="section">
+  <h3>Current Behavior (Normal Mode)</h3>
+  <div class="mockup">
+    <div class="mockup-header">"latest" — fresh input</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p><strong>Enter</strong> → translate, copy result, close window</p>
+      <p><strong>Ctrl+Enter</strong> → translate only, keep window open</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Proposed Behavior (History Mode)</h3>
+  <p class="subtitle">When viewing a history item via Ctrl+↑/↓</p>
+  <div class="mockup">
+    <div class="mockup-header">History item in view</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p><strong>Enter</strong> → toggle between 📝 input ↔ 🤖 result (no AI call)</p>
+      <p>Just switch what's displayed in the textarea</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Question: Can the user re-submit history input?</h3>
+  <p class="subtitle">When viewing a history item (input side), should the user be able to re-translate it?</p>
+  <div class="options">
+    <div class="option" data-choice="no-resubmit" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Enter = toggle only</h3>
+        <p>In history mode, Enter ONLY toggles input ↔ result</p>
+        <p>No re-translation from history mode</p>
+        <p>User must Ctrl+↓ back to "latest", paste, and submit</p>
+      </div>
+    </div>
+    <div class="option" data-choice="ctrl-enter-resubmit" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Ctrl+Enter re-submits</h3>
+        <p>In history mode, <strong>Enter</strong> = toggle input ↔ result</p>
+        <p><strong>Ctrl+Enter</strong> = re-translate the history input (creates new history entry)</p>
+      </div>
+    </div>
+  </div>
+</div>

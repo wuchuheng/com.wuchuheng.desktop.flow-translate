@@ -1,0 +1,53 @@
+<h2>Architecture Approaches</h2>
+<p class="subtitle">Three ways to structure the history feature within the existing codebase.</p>
+
+<div class="section">
+  <div class="options">
+    <div class="option" data-choice="hybrid" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Hybrid (Recommended)</h3>
+        <p><strong>Main process:</strong> HistoryService + IPC handlers for CRUD + file I/O</p>
+        <p><strong>Renderer:</strong> useHistory hook + extend useShortcuts</p>
+        <p>Follows exact existing pattern (like useTranslation + translation IPC)</p>
+        <p>Adds: History entity, history IPC module, useHistory hook</p>
+      </div>
+    </div>
+    <div class="option" data-choice="main-heavy" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Main-process heavy</h3>
+        <p>All navigation state + caching logic in main process</p>
+        <p>Renderer is a "dumb" display — just renders what main sends</p>
+        <p>More IPC chatter, goes against existing renderer-state pattern</p>
+      </div>
+    </div>
+    <div class="option" data-choice="renderer-only" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Renderer-only</h3>
+        <p>History state entirely in React, JSON files read/written via preload</p>
+        <p>No new DB entities, no main-process service</p>
+        <p>Simpler but breaks existing data-access patterns</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Why Approach A fits best</h3>
+  <div class="pros-cons">
+    <div class="pros"><h4>Pros</h4>
+      <ul>
+        <li>Matches existing architecture: IPC auto-registration, TypeORM entities, React hooks</li>
+        <li>Main process owns data (DB + files), renderer owns UI state</li>
+        <li>Same pattern as useTranslation / translation IPC</li>
+        <li>Adds ~4 new files, extends ~3 existing files</li>
+      </ul></div>
+    <div class="cons"><h4>Trade-offs</h4>
+      <ul>
+        <li>More files than approach C</li>
+        <li>IPC latency for each history operation (negligible for local SQLite)</li>
+      </ul></div>
+  </div>
+</div>

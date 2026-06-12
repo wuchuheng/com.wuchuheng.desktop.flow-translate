@@ -163,8 +163,7 @@ export const registerGlobalShortcut = async () => {
         const display = screen.getDisplayNearestPoint(cursorPoint);
         const windowBounds = floatingWindow.getBounds();
         const x = Math.round(display.bounds.x + (display.bounds.width - windowBounds.width) / 2);
-        const bottomMargin = Math.round(display.bounds.height * 0.2);
-        const y = Math.round(display.bounds.y + display.bounds.height - windowBounds.height - bottomMargin);
+        const y = Math.round(display.bounds.y + (display.bounds.height - windowBounds.height) / 2);
 
         floatingWindow.setPosition(x, y);
         floatingWindow.show();

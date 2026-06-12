@@ -24,10 +24,13 @@ export const getPaths = () => {
 
     // Application Logs
     logs: path.join(storage, 'logs'),
+
+    // Translation History
+    history: path.join(storage, 'history'),
   };
 
   // Ensure critical directories exist
-  [storage, paths.logs].forEach(dir => {
+  [storage, paths.logs, paths.history].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }

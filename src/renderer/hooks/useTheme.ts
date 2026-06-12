@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 
-export const useTheme = () => {
+/**
+ * Reactive hook that tracks the system color scheme preference.
+ * @returns `true` when the OS is in dark mode
+ */
+export const useTheme = (): boolean => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(mediaQuery.matches);
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(query.matches);
 
     const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
-    mediaQuery.addEventListener('change', handler);
+    query.addEventListener('change', handler);
 
-    return () => mediaQuery.removeEventListener('change', handler);
+    return () => query.removeEventListener('change', handler);
   }, []);
 
   return isDarkMode;

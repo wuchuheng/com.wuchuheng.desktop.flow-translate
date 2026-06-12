@@ -2,11 +2,13 @@ import type { ParserType, KeepAliveValue } from './types';
 import { openaiParser } from './parsers/openai';
 import { ollamaParser } from './parsers/ollama';
 
+/** Configuration for an AI provider in the catalog */
 export type AiProviderConfig = {
   id: string;
   name: string;
   baseUrl?: string;
   docsUrl?: string;
+  /** Provider-level thinking/reasoning toggle configuration */
   thinkingConfig?: {
     enable: Record<string, unknown>;
     disable: Record<string, unknown>;
@@ -15,14 +17,13 @@ export type AiProviderConfig = {
   parser: ParserType;
 };
 
-/**
- * Parser registry - maps parser type to implementation
- */
+/** Registry mapping parser type to its implementation */
 export const PARSERS = {
   openai: openaiParser,
   ollama: ollamaParser,
 } as const;
 
+/** Built-in AI provider catalog */
 export const AI_PROVIDER_CATALOG: AiProviderConfig[] = [
   {
     id: 'openai',
@@ -139,10 +140,11 @@ export const AI_PROVIDER_CATALOG: AiProviderConfig[] = [
   },
 ];
 
+/** Theme configuration persisted in the database */
 export type ThemeConfig = {
   mode: 'system' | 'light' | 'dark';
-  backgroundColor: string; // Hex
-  opacity: number; // 0-1
+  backgroundColor: string;
+  opacity: number;
 };
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
@@ -151,6 +153,7 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   opacity: 0.8,
 };
 
+/** AI configuration persisted in the database */
 export type AiConfig = {
   providerId: string;
   apiKey: string;
@@ -167,10 +170,11 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   model: 'gpt-4o',
   enableThinking: false,
   systemPrompt:
-    'Translate the following content into English. Output ONLY the English translation.\n\n<content>\n{text}\n</content>',
+    'Translate the following content into English. Output ONLY the English translation.\nIf the English content input by the user contains grammatical errors, correct them directly.\nAlso, if the content being translated needs polishing to ensure fluency, polish the manuscript directly.\n\n<content>\n{text}\n</content>',
   keepAlive: -1,
 };
 
+/** Database config key constants */
 export const CONFIG_KEYS = {
   AI: 'ai_config',
   THEME: 'theme_config',
@@ -178,6 +182,7 @@ export const CONFIG_KEYS = {
   APP: 'app_config',
 } as const;
 
+/** General application preferences */
 export type AppConfig = {
   runInBackground: boolean;
   autoStart: boolean;

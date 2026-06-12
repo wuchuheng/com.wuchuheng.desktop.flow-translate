@@ -1,0 +1,74 @@
+<h2>Design — Section 3: useHistory Hook</h2>
+<p class="subtitle">New file: <code>src/renderer/hooks/useHistory.ts</code></p>
+
+<div class="section">
+  <h3>Hook State</h3>
+  <div class="mockup">
+    <div class="mockup-header">Internal state + return values</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6;font-family:monospace">
+      <p>mode: "latest" | "history"</p>
+      <p>activeId: number | null  // current history item id</p>
+      <p>showingSide: "input" | "transaction"  // Ctrl+Left toggles</p>
+      <p>latestCache: string  // cached "latest" text when navigating away</p>
+      <p>historyList: { id, createdAt }[]  // for navigation</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Key Methods</h3>
+  <div class="mockup">
+    <div class="mockup-header">Exposed to FlowTranslate component</div>
+    <div class="mockup-body" style="font-size:12px;line-height:1.6;font-family:monospace">
+      <p>navigateUp() / navigateDown()</p>
+      <p>toggleSide()  // Ctrl+Left</p>
+      <p>submitHistory()  // Enter in history mode (lazy AI)</p>
+      <p>submitHistoryKeepOpen()  // Ctrl+Enter in history mode</p>
+      <p>setLatestText(text)  // called on every keystroke in "latest" mode</p>
+      <p>commitLatestAsHistory()  // save cached latest as new history item</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Navigate State Machine</h3>
+  <div class="mockup">
+    <div class="mockup-header">Ctrl+↑/↓ logic</div>
+    <div class="mockup-body" style="font-size:11px;line-height:1.6">
+      <p><strong>Ctrl+↑ from "latest":</strong></p>
+      <p style="margin-left:16px">cache current input → switch to "history" mode → load newest item</p>
+      <p><strong>Ctrl+↑ from first history item:</strong></p>
+      <p style="margin-left:16px">do nothing (at oldest)</p>
+      <p><strong>Ctrl+↓ from last history item:</strong></p>
+      <p style="margin-left:16px">switch to "latest" mode → restore cached text</p>
+      <p><strong>Ctrl+↓ from "latest":</strong></p>
+      <p style="margin-left:16px">do nothing (can't go past latest)</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Lazy AI translation trigger</h3>
+  <div class="mockup">
+    <div class="mockup-header">When Enter or Ctrl+Left in history mode</div>
+    <div class="mockup-body" style="font-size:11px;line-height:1.6">
+      <p>If <code>transaction</code> is empty AND <code>input</code> is not empty:</p>
+      <p style="margin-left:16px">→ Call <code>startTranslation(input)</code> (same as normal mode)</p>
+      <p style="margin-left:16px">→ Stream result, update JSON file, then proceed with copy</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Does this hook design work?</h3>
+  <div class="options">
+    <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Looks good</h3></div>
+    </div>
+    <div class="option" data-choice="fix" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Needs changes</h3></div>
+    </div>
+  </div>
+</div>

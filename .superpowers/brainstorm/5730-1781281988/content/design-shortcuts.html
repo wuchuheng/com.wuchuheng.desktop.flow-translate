@@ -1,0 +1,89 @@
+<h2>Design — Section 4: Keyboard Shortcuts</h2>
+<p class="subtitle">Modifying <code>src/renderer/hooks/useShortcuts.ts</code></p>
+
+<div class="section">
+  <h3>New key bindings to add</h3>
+  <table style="width:100%;font-size:13px;border-collapse:collapse">
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:8px">Keys</th>
+      <th style="text-align:left;padding:8px">Mode</th>
+      <th style="text-align:left;padding:8px">Action</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Ctrl+↑</td>
+      <td style="padding:8px">All</td>
+      <td style="padding:8px">Navigate to previous history item</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Ctrl+↓</td>
+      <td style="padding:8px">All</td>
+      <td style="padding:8px">Navigate to next history item (or "latest")</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Ctrl+←</td>
+      <td style="padding:8px">History</td>
+      <td style="padding:8px">Toggle between input ↔ transaction display</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Ctrl+→</td>
+      <td style="padding:8px">History</td>
+      <td style="padding:8px">Same as Ctrl+← (toggle)</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Modified Enter behavior</h3>
+  <table style="width:100%;font-size:13px;border-collapse:collapse">
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:8px">Keys</th>
+      <th style="text-align:left;padding:8px">Mode</th>
+      <th style="text-align:left;padding:8px">Action</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Enter</td>
+      <td style="padding:8px">Latest</td>
+      <td style="padding:8px">AI translate → copy → close (unchanged)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Enter</td>
+      <td style="padding:8px">History</td>
+      <td style="padding:8px">Copy transaction result → close (lazy AI if empty)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Ctrl+Enter</td>
+      <td style="padding:8px">Latest</td>
+      <td style="padding:8px">AI translate only → keep open (unchanged)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px;font-family:monospace">Ctrl+Enter</td>
+      <td style="padding:8px">History</td>
+      <td style="padding:8px">Copy transaction result → keep open (lazy AI if empty)</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Refactoring note</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-size:12px;line-height:1.6">
+      <p>useShortcuts currently takes <code>onSubmit(closeWindow?)</code> and <code>onClose()</code>.</p>
+      <p>We'll extend the signature to also accept history-aware callbacks:</p>
+      <p style="font-family:monospace;font-size:11px">onNavigate("up" | "down"), onToggleSide(), onSubmitHistory(closeWindow?)</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Confirm key assignments?</h3>
+  <div class="options">
+    <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content"><h3>Looks good</h3></div>
+    </div>
+    <div class="option" data-choice="fix" onclick="toggleSelect(this)">
+      <div class="letter">✗</div>
+      <div class="content"><h3>Needs changes</h3></div>
+    </div>
+  </div>
+</div>

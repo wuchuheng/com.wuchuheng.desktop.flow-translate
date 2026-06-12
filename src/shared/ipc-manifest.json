@@ -19,6 +19,24 @@
       "type": "invoke"
     }
   },
+  "history": {
+    "create": {
+      "channel": "history:create",
+      "type": "invoke"
+    },
+    "getAll": {
+      "channel": "history:getAll",
+      "type": "invoke"
+    },
+    "getById": {
+      "channel": "history:getById",
+      "type": "invoke"
+    },
+    "updateTransaction": {
+      "channel": "history:updateTransaction",
+      "type": "invoke"
+    }
+  },
   "system": {
     "bootloading": {
       "channel": "system:bootloading",

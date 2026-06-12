@@ -1,10 +1,10 @@
 import type { AiProviderParser, ChatRequest, KeepAliveValue } from '../types';
 
 /**
- * Ollama native API parser
+ * Ollama native API parser.
  * - Uses OpenAI-compatible endpoint for model listing (/v1/models)
- * - Uses native /api/chat for chat (supports thinking feature)
- * - Model names include tags (e.g., "qwen3.5:9b") and must be preserved
+ * - Uses native /api/chat for streaming chat (supports thinking)
+ * - Model names include tags (e.g. "qwen3.5:9b") and must be preserved
  */
 export const ollamaParser: AiProviderParser = {
   async fetchModels(baseUrl: string): Promise<string[]> {
@@ -17,7 +17,6 @@ export const ollamaParser: AiProviderParser = {
   },
 
   async *streamChat(baseUrl: string, _apiKey: string, request: ChatRequest): AsyncGenerator<string> {
-    // Ollama requires exact model name including tag (e.g., "qwen3.5:9b")
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,7 +32,12 @@ export const ollamaParser: AiProviderParser = {
       throw new Error(`Ollama API error: ${response.statusText}`);
     }
 
-    const reader = response.body!.getReader();
+    const body = response.body;
+    if (!body) {
+      throw new Error('Ollama API returned no response body');
+    }
+
+    const reader = body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
 
@@ -54,7 +58,7 @@ export const ollamaParser: AiProviderParser = {
             if (chunk.message?.content) yield chunk.message.content;
             if (chunk.done) return;
           } catch {
-            continue; // Skip malformed JSON
+            // Skip malformed JSON lines
           }
         }
       }
