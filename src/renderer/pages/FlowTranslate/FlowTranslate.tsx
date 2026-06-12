@@ -32,6 +32,19 @@ export const FlowTranslate: React.FC = () => {
     translation, isTranslating, hasError, startTranslation, resetTranslation, getOriginalInput,
     elapsedMs, charsReceived, tokensUsed,
   } = useTranslation();
+
+  // Persist last translation summary so it stays visible after completion
+  const [lastSummary, setLastSummary] = useState<{
+    chars: number; tokens: number; secs: number;
+  } | null>(null);
+  const prevTranslatingRef = useRef(isTranslating);
+  useEffect(() => {
+    if (prevTranslatingRef.current && !isTranslating && charsReceived > 0 && !hasError) {
+      setLastSummary({ chars: charsReceived, tokens: tokensUsed ?? Math.round(charsReceived / 4), secs: elapsedMs / 1000 });
+    }
+    prevTranslatingRef.current = isTranslating;
+  }, [isTranslating, charsReceived, tokensUsed, elapsedMs, hasError]);
+
   const {
     mode, activeId, showingSide, historyList, activeContent,
     navigate, toggleSide, onEditInHistory, cacheLatest, getCachedLatest,
@@ -265,59 +278,78 @@ export const FlowTranslate: React.FC = () => {
               </span>
             </div>
           ) : (
-            <div className="grid w-full grid-cols-3 gap-x-2 gap-y-1">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center">
-                  <Key title="Enter">Enter</Key>
-                  <span className="ml-0.5 transition-colors hover:text-blue-400">trans, copy & close</span>
+            <div className="flex w-full flex-col">
+              <div className="grid w-full grid-cols-3 gap-x-2 gap-y-1">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <Key title="Enter">Enter</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">trans, copy & close</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="Enter">Enter</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">translate only</span>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <Key title="Ctrl">Ctrl</Key>
-                  <span className="mx-0.5 text-[10px] opacity-40">+</span>
-                  <Key title="Enter">Enter</Key>
-                  <span className="ml-0.5 transition-colors hover:text-blue-400">translate only</span>
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center">
-                  <Key title="Shift">Shift</Key>
-                  <span className="mx-0.5 text-[10px] opacity-40">+</span>
-                  <Key title="Enter">⏎</Key>
-                  <span className="mx-0.5 text-[10px] opacity-40">/</span>
-                  <Key title="Ctrl">^</Key>
-                  <span className="mx-0.5 text-[10px] opacity-40">+</span>
-                  <Key title="J">J</Key>
-                  <span className="ml-0.5 transition-colors hover:text-blue-400">new line</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <Key title="Shift">Shift</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="Enter">⏎</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">/</span>
+                    <Key title="Ctrl">^</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="J">J</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">new line</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="D">D</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">clear content</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="W">W</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">delete word</span>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <Key title="Ctrl">Ctrl</Key>
-                  <span className="mx-0.5 text-[10px] opacity-40">+</span>
-                  <Key title="D">D</Key>
-                  <span className="ml-0.5 transition-colors hover:text-blue-400">clear content</span>
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center">
-                  <Key title="Ctrl">Ctrl</Key>
-                  <span className="mx-0.5 text-[10px] opacity-40">+</span>
-                  <Key title="C">C</Key>
-                  <span className="ml-0.5 transition-colors hover:text-blue-400">copy & close</span>
-                </div>
-                <div
-                  className="group flex cursor-pointer items-center"
-                  onClick={e => {
-                    e.stopPropagation();
-                    window.electron.window.hide();
-                  }}
-                >
-                  <Key onClick={() => window.electron.window.hide()} title="Click to close">
-                    Esc
-                  </Key>
-                  <span className="ml-0.5 transition-colors group-hover:text-red-400">close only</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="C">C</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">copy & close</span>
+                  </div>
+                  <div
+                    className="group flex cursor-pointer items-center"
+                    onClick={e => {
+                      e.stopPropagation();
+                      window.electron.window.hide();
+                    }}
+                  >
+                    <Key onClick={() => window.electron.window.hide()} title="Click to close">
+                      Esc
+                    </Key>
+                    <span className="ml-0.5 transition-colors group-hover:text-red-400">close only</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Key title="Ctrl">Ctrl</Key>
+                    <span className="mx-0.5 text-[10px] opacity-40">+</span>
+                    <Key title="ArrowUp">↑↓</Key>
+                    <span className="ml-0.5 transition-colors hover:text-blue-400">history</span>
+                  </div>
                 </div>
               </div>
+              {lastSummary && (
+                <div className="mt-0.5 border-t border-black/5 pt-0.5 font-mono text-[10px] text-gray-400 dark:border-white/5 dark:text-white/25">
+                  last  {lastSummary.chars}ch  {lastSummary.tokens}tk  {lastSummary.secs.toFixed(2)}s
+                </div>
+              )}
             </div>
           )}
         </div>
