@@ -170,7 +170,7 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   model: 'gpt-4o',
   enableThinking: false,
   systemPrompt:
-    'Translate the following content into English. Output ONLY the English translation.\n\n<content>\n{text}\n</content>',
+    'Translate the following content into English. Output ONLY the English translation.\nIf the English content input by the user contains grammatical errors, correct them directly.\nAlso, if the content being translated needs polishing to ensure fluency, polish the manuscript directly.\n\n<content>\n{text}\n</content>',
   keepAlive: -1,
 };
 
