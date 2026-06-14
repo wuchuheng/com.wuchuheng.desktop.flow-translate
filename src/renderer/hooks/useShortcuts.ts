@@ -8,8 +8,8 @@ const deleteWordBackward = (text: string, cursorPos: number): { text: string; cu
   const beforeCursor = text.slice(0, cursorPos);
   const afterCursor = text.slice(cursorPos);
 
-  // Match: whitespace+word, whitespace-only, or a word with no preceding whitespace (first word)
-  const trimmed = beforeCursor.replace(/(?:\s+\S*|\s+|\S+)$/, '');
+  // Match: word + trailing spaces, or whitespace-only
+  const trimmed = beforeCursor.replace(/(?:\S+\s*|\s+)$/, '');
   if (trimmed.length === beforeCursor.length) return null;
 
   return { text: trimmed + afterCursor, cursorPos: trimmed.length };
