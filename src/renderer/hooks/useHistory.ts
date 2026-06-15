@@ -121,7 +121,7 @@ export const useHistory = () => {
     (latestText: string) => {
       if (mode === 'latest') return latestText;
       if (!activeContent) return '';
-      return showingSide === 'input' ? activeContent.input : (activeContent.transaction || '');
+      return showingSide === 'input' ? activeContent.input : activeContent.transaction || '';
     },
     [mode, activeContent, showingSide]
   );

@@ -53,9 +53,7 @@ export const createHistory = async (input: string): Promise<number> => {
   } catch (error) {
     // Rollback the DB row so no orphaned record lingers.
     await repo.delete(record.id);
-    throw new Error(
-      `Failed to write history JSON file: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    throw new Error(`Failed to write history JSON file: ${error instanceof Error ? error.message : String(error)}`);
   }
 
   return record.id;
@@ -88,7 +86,7 @@ export const updateTransaction = async (id: number, transaction: string): Promis
     await repo.update(id, {});
   } catch (error) {
     throw new Error(
-      `Failed to update history DB record ${id}: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to update history DB record ${id}: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 
@@ -103,7 +101,7 @@ export const updateTransaction = async (id: number, transaction: string): Promis
     content = JSON.parse(raw);
   } catch (error) {
     throw new Error(
-      `Corrupt history JSON file for record ${id}: ${error instanceof Error ? error.message : String(error)}`,
+      `Corrupt history JSON file for record ${id}: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 
