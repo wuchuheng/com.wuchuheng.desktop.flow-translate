@@ -13,6 +13,16 @@
       "type": "invoke"
     }
   },
+  "draft": {
+    "get": {
+      "channel": "draft:get",
+      "type": "invoke"
+    },
+    "save": {
+      "channel": "draft:save",
+      "type": "invoke"
+    }
+  },
   "grammarly": {
     "openAuth": {
       "channel": "grammarly:openAuth",

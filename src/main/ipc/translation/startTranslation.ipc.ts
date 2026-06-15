@@ -7,6 +7,7 @@ import { Config } from '../../database/entities/config.entity';
 import { createHistory, updateTransaction } from '../../database/repositories/history.repository';
 import { PARSERS, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
 import { getProviderById, getBaseUrl } from '@/shared/ai-helper';
+import { clearDraftCache } from '../draft/save.ipc';
 import type { ChatRequest } from '@/shared/types';
 
 export type TranslateChunkPayload = {
@@ -82,6 +83,8 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     if (historyId !== null) {
       await updateTransaction(historyId, fullTranslation);
     }
+
+    clearDraftCache();
 
     if (closeAfter) {
       const wins = BrowserWindow.getAllWindows();

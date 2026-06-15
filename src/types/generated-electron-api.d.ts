@@ -13,6 +13,10 @@ type IpcModules = {
     onThemeUpdate: typeof import('../main/ipc/config/onThemeUpdate.ipc').default;
     save: typeof import('../main/ipc/config/save.ipc').default;
   };
+  draft: {
+    get: typeof import('../main/ipc/draft/get.ipc').default;
+    save: typeof import('../main/ipc/draft/save.ipc').default;
+  };
   grammarly: {
     openAuth: typeof import('../main/ipc/grammarly/openAuth.ipc').default;
   };

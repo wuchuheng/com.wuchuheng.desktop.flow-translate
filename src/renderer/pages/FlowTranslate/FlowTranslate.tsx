@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useShortcuts } from '../../hooks/useShortcuts';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { useHistory } from '../../hooks/useHistory';
+import { useDraft } from '../../hooks/useDraft';
 import { hexToRgba } from '@/shared/utils';
 
 /** Custom scrollbar styles for the textarea (light + dark variants) */
@@ -76,6 +77,8 @@ export const FlowTranslate: React.FC = () => {
     getTextareaValue,
     resetToLatest,
   } = useHistory();
+
+  const { saveDraft, restoreDraft } = useDraft();
 
   // Handle Enter in history mode: copy stored result, lazy AI if empty
   const handleHistorySubmit = useCallback(
@@ -223,28 +226,40 @@ export const FlowTranslate: React.FC = () => {
       document.title = 'FlowTranslatePopup';
     }
 
-    const unsubscribeOnShow = window.electron.window.onShow(() => {
+    const unsubscribeOnShow = window.electron.window.onShow(async () => {
       setInput('');
       resetTranslation();
       resetToLatest();
+      const draft = await restoreDraft();
+      if (draft) {
+        setInput(draft.text);
+        requestAnimationFrame(() => {
+          if (textareaRef.current) {
+            const pos = Math.min(draft.cursorPos, draft.text.length);
+            textareaRef.current.setSelectionRange(pos, pos);
+          }
+        });
+      }
       textareaRef.current?.focus();
     });
 
     return unsubscribeOnShow;
-  }, [resetTranslation, resetToLatest]);
+  }, [resetTranslation, resetToLatest, restoreDraft]);
 
   // Handle edits in history mode
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
+      const cursorPos = e.target.selectionStart;
       if (mode === 'history') {
         onEditInHistory();
         setInput(newValue);
         return;
       }
       setInput(newValue);
+      saveDraft(newValue, cursorPos);
     },
-    [mode, onEditInHistory]
+    [mode, onEditInHistory, saveDraft]
   );
 
   const dynamicBgStyle = { backgroundColor: hexToRgba(theme.backgroundColor, theme.opacity) };
