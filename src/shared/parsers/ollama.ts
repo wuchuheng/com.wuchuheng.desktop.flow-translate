@@ -69,6 +69,23 @@ export const ollamaParser: AiProviderParser = {
           }
         }
       }
+
+      buffer += decoder.decode();
+      if (buffer.trim()) {
+        try {
+          const chunk = JSON.parse(buffer);
+          const content = typeof chunk.message?.content === 'string' ? chunk.message.content : '';
+          const promptTokens = typeof chunk.prompt_eval_count === 'number' ? chunk.prompt_eval_count : undefined;
+          const completionTokens = typeof chunk.eval_count === 'number' ? chunk.eval_count : undefined;
+          const usage: StreamChunk['usage'] =
+            promptTokens !== undefined || completionTokens !== undefined
+              ? { promptTokens, completionTokens, reasoningTokens: undefined }
+              : undefined;
+          if (content || usage) yield { content, usage };
+        } catch {
+          // Skip malformed JSON lines
+        }
+      }
     } finally {
       reader.releaseLock();
     }
