@@ -24,6 +24,8 @@ export const useTranslation = () => {
   const [charsReceived, setCharsReceived] = useState(0);
   const [completionTokens, setCompletionTokens] = useState<number | undefined>(undefined);
   const [promptTokens, setPromptTokens] = useState<number | undefined>(undefined);
+  const [reasoningTokens, setReasoningTokens] = useState<number | undefined>(undefined);
+  const [reasoningUsageUnavailable, setReasoningUsageUnavailable] = useState(false);
   const startTimeRef = useRef<number>(0);
 
   // Listen for streaming translation chunks from the main process
@@ -43,6 +45,12 @@ export const useTranslation = () => {
         if (payload.stats.promptTokens !== undefined) {
           setPromptTokens(payload.stats.promptTokens);
         }
+        if (payload.stats.reasoningTokens !== undefined) {
+          setReasoningTokens(payload.stats.reasoningTokens);
+        }
+      }
+      if (payload.reasoningUnavailable) {
+        setReasoningUsageUnavailable(true);
       }
       if (payload.done) {
         setIsTranslating(false);
@@ -84,6 +92,8 @@ export const useTranslation = () => {
     setCharsReceived(0);
     setCompletionTokens(undefined);
     setPromptTokens(undefined);
+    setReasoningTokens(undefined);
+    setReasoningUsageUnavailable(false);
     setIsTranslating(true);
     window.electron.translation.startTranslation({
       text,
@@ -101,6 +111,8 @@ export const useTranslation = () => {
     setCharsReceived(0);
     setCompletionTokens(undefined);
     setPromptTokens(undefined);
+    setReasoningTokens(undefined);
+    setReasoningUsageUnavailable(false);
     originalInputRef.current = '';
   };
 
@@ -118,5 +130,7 @@ export const useTranslation = () => {
     charsReceived,
     completionTokens,
     promptTokens,
+    reasoningTokens,
+    reasoningUsageUnavailable,
   };
 };

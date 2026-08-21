@@ -32,6 +32,7 @@
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/changelog-parser": "^2.8.4",
     "@types/node": "^22.15.29",
@@ -56,6 +57,7 @@
     "eslint-plugin-import": "^2.31.0",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.1.0",
+    "jsdom": "^29.1.1",
     "nodemon": "^3.1.14",
     "openai": "^6.21.0",
     "postcss": "^8.5.4",

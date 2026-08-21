@@ -6,6 +6,8 @@ import { useAppTheme } from '../../hooks/useAppTheme';
 import { useHistory } from '../../hooks/useHistory';
 import { useDraft } from '../../hooks/useDraft';
 import { hexToRgba } from '@/shared/utils';
+import { CONFIG_KEYS, DEFAULT_AI_CONFIG } from '@/shared/constants';
+import { useConfig } from '../../hooks/useConfig';
 
 /** Custom scrollbar styles for the textarea (light + dark variants) */
 const SCROLLBAR_STYLES = `
@@ -26,9 +28,11 @@ const SCROLLBAR_STYLES = `
  */
 export const FlowTranslate: React.FC = () => {
   const [input, setInput] = useState('');
+  const [isWindowActive, setIsWindowActive] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { theme, isDarkMode } = useAppTheme();
+  const { config: aiConfig } = useConfig(CONFIG_KEYS.AI, DEFAULT_AI_CONFIG);
   const {
     translation,
     isTranslating,
@@ -40,6 +44,8 @@ export const FlowTranslate: React.FC = () => {
     charsReceived,
     completionTokens,
     promptTokens,
+    reasoningTokens,
+    reasoningUsageUnavailable,
   } = useTranslation();
 
   // Footer shortcuts visibility (collapsed by default)
@@ -215,6 +221,19 @@ export const FlowTranslate: React.FC = () => {
     }
   }, [mode, getCachedLatest]);
 
+  // Track BrowserWindow focus separately from textarea focus for popup feedback.
+  useEffect(() => {
+    const handleFocus = () => setIsWindowActive(true);
+    const handleBlur = () => setIsWindowActive(false);
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
   // Setup window styles and focus handler on show
   useEffect(() => {
     const app = document.getElementById('app') as HTMLDivElement | null;
@@ -227,6 +246,7 @@ export const FlowTranslate: React.FC = () => {
     }
 
     const unsubscribeOnShow = window.electron.window.onShow(async () => {
+      setIsWindowActive(true);
       setInput('');
       resetTranslation();
       resetToLatest();
@@ -268,7 +288,7 @@ export const FlowTranslate: React.FC = () => {
     <div className={`w-full font-sans ${isDarkMode ? 'dark text-white' : 'text-gray-900'}`}>
       <style>{SCROLLBAR_STYLES}</style>
       <div
-        className="flex w-full flex-col rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
+        className="relative flex w-full flex-col rounded-2xl border border-black/5 shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_24px_48px_rgba(0,0,0,0.1)] backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)]"
         style={dynamicBgStyle}
       >
         <div className="relative flex flex-col">
@@ -320,6 +340,9 @@ export const FlowTranslate: React.FC = () => {
                 {completionTokens !== undefined ? completionTokens : `~${Math.max(1, Math.round(charsReceived / 4))}`}
                 <span className="ml-0.5 text-[9px] text-gray-400">tk</span>
               </span>
+              {reasoningTokens !== undefined && (
+                <span className="text-purple-500">Reasoning: {reasoningTokens} tokens</span>
+              )}
             </div>
           ) : mode === 'history' && activeId !== null ? (
             <div className="flex w-full items-center justify-between px-1">
@@ -413,11 +436,22 @@ export const FlowTranslate: React.FC = () => {
                     ? `last  ${lastSummary.input} input tokens  ${lastSummary.output} output tokens  ${lastSummary.total} total tokens  ${lastSummary.secs.toFixed(2)}s`
                     : '\u00A0'}
                 </span>
+                {!isTranslating &&
+                  aiConfig.enableThinking &&
+                  reasoningUsageUnavailable &&
+                  reasoningTokens === undefined && <span>Reasoning: usage not reported</span>}
                 <span className="ml-2 shrink-0 text-[9px] text-gray-500 dark:text-white/35">ctrl+shift+? help</span>
               </div>
             </div>
           )}
         </div>
+        {!isWindowActive && (
+          <span
+            aria-label="Input inactive"
+            title="Click this window or use the shortcut to type."
+            className="absolute bottom-2 right-2 h-2 w-2 rounded-full bg-red-500"
+          />
+        )}
       </div>
     </div>
   );
