@@ -34,7 +34,6 @@ type NestedConfig = Record<string, unknown>;
  * Priority:
  * 1. Provider-level thinkingConfig (from the catalog)
  * 2. Model-level config (from thinkingConfig map, with glm- prefix fallback)
- * 3. OpenAI-standard fallback (reasoning_effort = 'low')
  */
 export const addThinkingArgument = (
   requestConfig: NestedConfig,
@@ -59,11 +58,6 @@ export const addThinkingArgument = (
   if (modelConfig) {
     applyNestedConfig(requestConfig, modelConfig.query, enable ? modelConfig.enable : modelConfig.disable);
     return requestConfig;
-  }
-
-  // 3. OpenAI-standard fallback
-  if (enable) {
-    requestConfig.reasoning_effort = 'low';
   }
 
   return requestConfig;
