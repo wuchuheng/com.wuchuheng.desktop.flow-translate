@@ -113,8 +113,21 @@ export const useShortcuts = (
       return;
     }
 
-    // Ctrl/Cmd+J: Allow newline (passthrough)
+    // Ctrl/Cmd+J: Insert a newline in the controlled textarea
     if (e.key === 'j' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const selectionStart = textarea.selectionStart;
+      const selectionEnd = textarea.selectionEnd;
+      const newText = input.slice(0, selectionStart) + '\n' + input.slice(selectionEnd);
+      setInput(newText);
+      requestAnimationFrame(() => {
+        const caretPosition = selectionStart + 1;
+        textarea.setSelectionRange(caretPosition, caretPosition);
+      });
       return;
     }
 
