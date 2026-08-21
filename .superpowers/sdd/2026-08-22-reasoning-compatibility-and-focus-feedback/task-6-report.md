@@ -42,3 +42,12 @@ Tests  2 passed (2)
 ## Commit
 
 Commit: `6c13e68` (the implementation and report were committed together).
+
+## Review fix verification
+
+- Updated the JSDoc to describe explicit newline insertion.
+- Each test now installs its own `requestAnimationFrame` stub, and `afterEach` restores globals.
+- Full focused file: 2 passed.
+- Isolated caret test: 1 passed, 1 skipped.
+- Isolated selection-replacement test: 1 passed, 1 skipped.
+- Typecheck still reports only the existing `windowFactory.ts` errors listed above.

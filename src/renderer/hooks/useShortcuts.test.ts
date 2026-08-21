@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useShortcuts } from './useShortcuts';
 
 const createKeyEvent = (overrides: Partial<React.KeyboardEvent<HTMLTextAreaElement>> = {}) => ({
@@ -11,6 +11,10 @@ const createKeyEvent = (overrides: Partial<React.KeyboardEvent<HTMLTextAreaEleme
 }) as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
 
 describe('useShortcuts Ctrl/Cmd+J newline insertion', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('inserts a newline at the caret and places the caret after it', async () => {
     const textarea = document.createElement('textarea');
     Object.defineProperty(textarea, 'selectionStart', { value: 1, configurable: true });
@@ -51,6 +55,11 @@ describe('useShortcuts Ctrl/Cmd+J newline insertion', () => {
     const setInput = (value: string) => {
       input = value;
     };
+    const requestFrame = vi.fn((callback: FrameRequestCallback) => {
+      callback(0);
+      return 0;
+    });
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
     const { result } = renderHook(() =>
       useShortcuts(input, setInput, { onSubmit: vi.fn(), onClose: vi.fn() }, textareaRef)
     );
@@ -60,6 +69,7 @@ describe('useShortcuts Ctrl/Cmd+J newline insertion', () => {
     });
 
     expect(input).toBe('a\nd');
+    expect(requestFrame).toHaveBeenCalledOnce();
     expect(textarea.setSelectionRange).toHaveBeenCalledWith(2, 2);
   });
 });

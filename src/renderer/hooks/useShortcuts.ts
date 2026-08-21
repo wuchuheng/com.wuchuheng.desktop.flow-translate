@@ -37,7 +37,7 @@ type ShortcutHandlers = {
  * - Ctrl/Cmd+W  → Delete word before cursor (instead of closing window)
  * - Escape       → Close window
  * - Ctrl/Cmd+C   → Copy input, clear, and close
- * - Ctrl/Cmd+J   → Allow newline (passthrough)
+ * - Ctrl/Cmd+J   → Insert a newline at the selection
  * - Ctrl/Cmd+D   → Clear input
  * - Enter        → Translate, copy result, and close
  * - Ctrl/Cmd+Enter → Translate only (keep window open)
