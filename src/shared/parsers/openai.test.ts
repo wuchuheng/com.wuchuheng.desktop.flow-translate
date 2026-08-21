@@ -95,6 +95,41 @@ describe('openaiParser.streamChat', () => {
     ]);
   });
 
+  it('does not mark a disabled reasoning request after a classified fallback retry', async () => {
+    completionCreate
+      .mockRejectedValueOnce({ status: 400, message: 'unsupported parameter enable_thinking' })
+      .mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          yield { choices: [{ delta: { content: 'Translated' } }] };
+        },
+      });
+
+    const chunks = await collect(
+      { ...requestFor('qwen', 'disabled-fallback-model'), enableThinking: false },
+      'https://disabled-fallback.example/v1'
+    );
+
+    expect(chunks).toEqual([{ content: 'Translated', usage: undefined }]);
+    expect(completionCreate).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not mark a cached reasoning fallback', async () => {
+    completionCreate
+      .mockRejectedValueOnce({ status: 400, message: 'unsupported parameter enable_thinking' })
+      .mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          yield { choices: [{ delta: { content: 'Translated' } }] };
+        },
+      });
+    const request = requestFor('qwen', 'cached-notice-model');
+    const baseUrl = 'https://cached-notice.example/v1';
+
+    await collect(request, baseUrl);
+    const chunks = await collect(request, baseUrl);
+
+    expect(chunks).toEqual([{ content: 'Translated', usage: undefined }]);
+  });
+
   it.each([
     ['profile-free request', requestFor('custom', 'profile-free-model')],
     ['disabled reasoning request', { ...requestFor('qwen', 'disabled-model'), enableThinking: false }],

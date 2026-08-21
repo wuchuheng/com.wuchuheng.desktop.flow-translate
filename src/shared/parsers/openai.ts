@@ -65,7 +65,7 @@ export const openaiParser: AiProviderParser = {
 
         markReasoningUnsupportedForTarget(targetKey);
         stream = await createStream({});
-        reasoningUnavailable = true;
+        reasoningUnavailable = request.enableThinking;
       }
     } else {
       stream = await createStream({});
