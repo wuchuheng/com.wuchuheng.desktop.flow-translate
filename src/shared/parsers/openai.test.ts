@@ -77,6 +77,40 @@ describe('openaiParser.streamChat', () => {
     expect(completionCreate.mock.calls[0][0]).not.toHaveProperty('enable_thinking');
   });
 
+  it('marks only the first chunk after a classified reasoning fallback', async () => {
+    completionCreate
+      .mockRejectedValueOnce({ status: 400, message: 'unsupported parameter enable_thinking' })
+      .mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          yield { choices: [{ delta: { content: 'First' } }] };
+          yield { choices: [{ delta: { content: 'Second' } }] };
+        },
+      });
+
+    const chunks = await collect(requestFor('qwen', 'notice-model'), 'https://notice.example/v1');
+
+    expect(chunks).toEqual([
+      { content: 'First', usage: undefined, reasoningUnavailable: true },
+      { content: 'Second', usage: undefined },
+    ]);
+  });
+
+  it.each([
+    ['profile-free request', requestFor('custom', 'profile-free-model')],
+    ['disabled reasoning request', { ...requestFor('qwen', 'disabled-model'), enableThinking: false }],
+    ['normal profiled request', requestFor('qwen', 'normal-profile-model')],
+  ])('does not mark a %s as reasoning unavailable', async (_description, request) => {
+    completionCreate.mockResolvedValue({
+      async *[Symbol.asyncIterator]() {
+        yield { choices: [{ delta: { content: 'Translated' } }] };
+      },
+    });
+
+    const chunks = await collect(request, `https://${request.model}.example/v1`);
+
+    expect(chunks).toEqual([{ content: 'Translated', usage: undefined }]);
+  });
+
   it.each([
     [{ completion_tokens_details: { reasoning_tokens: 7 } }, 7],
     [{ output_tokens_details: { thinking_tokens: 11 } }, 11],

@@ -39,6 +39,8 @@ export type ChatRequest = {
 /** Per-chunk data from SSE stream */
 export type StreamChunk = {
   content: string;
+  /** A compatible provider rejected its known reasoning field and succeeded without it. */
+  reasoningUnavailable?: boolean;
   /** Token usage reported by the API (may only appear in final chunk) */
   usage?: {
     promptTokens?: number;

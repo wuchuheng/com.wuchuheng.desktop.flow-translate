@@ -14,10 +14,12 @@ export type TranslateChunkPayload = {
   chunk: string;
   done: boolean;
   isError?: boolean;
+  reasoningUnavailable?: boolean;
   stats?: {
     charsReceived: number;
     completionTokens?: number;
     promptTokens?: number;
+    reasoningTokens?: number;
   };
 };
 
@@ -65,15 +67,18 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     let totalChars = 0;
     let completionTokens: number | undefined;
     let promptTokens: number | undefined;
+    let reasoningTokens: number | undefined;
     for await (const sc of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
       fullTranslation += sc.content;
       totalChars += sc.content.length;
       if (sc.usage?.completionTokens !== undefined) completionTokens = sc.usage.completionTokens;
       if (sc.usage?.promptTokens !== undefined) promptTokens = sc.usage.promptTokens;
+      if (sc.usage?.reasoningTokens !== undefined) reasoningTokens = sc.usage.reasoningTokens;
       onTranslateChunk({
         chunk: sc.content,
         done: false,
-        stats: { charsReceived: totalChars, completionTokens, promptTokens },
+        ...(sc.reasoningUnavailable ? { reasoningUnavailable: true } : {}),
+        stats: { charsReceived: totalChars, completionTokens, promptTokens, reasoningTokens },
       });
     }
 

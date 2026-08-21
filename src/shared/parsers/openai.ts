@@ -56,6 +56,7 @@ export const openaiParser: AiProviderParser = {
       }) as Promise<Stream<ChatCompletionChunk>>;
 
     let stream: Stream<ChatCompletionChunk>;
+    let reasoningUnavailable = false;
     if (profile && !isReasoningDisabledForTarget(targetKey)) {
       try {
         stream = await createStream(buildReasoningRequestFields(profile));
@@ -64,6 +65,7 @@ export const openaiParser: AiProviderParser = {
 
         markReasoningUnsupportedForTarget(targetKey);
         stream = await createStream({});
+        reasoningUnavailable = true;
       }
     } else {
       stream = await createStream({});
@@ -72,7 +74,10 @@ export const openaiParser: AiProviderParser = {
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
       const usage = chunk.usage ? normalizeUsage(chunk.usage) : undefined;
-      if (content || usage) yield { content, usage };
+      if (content || usage) {
+        yield { content, usage, ...(reasoningUnavailable ? { reasoningUnavailable: true } : {}) };
+        reasoningUnavailable = false;
+      }
     }
   },
 };
