@@ -13,7 +13,7 @@ const ELAPSED_TICK_MS = 100;
  * received for real-time stats display in the footer, and auto-dismisses errors
  * after {@link ERROR_DISPLAY_DURATION_MS}.
  */
-export const useTranslation = () => {
+export const useTranslation = (reasoningEnabled: boolean = false) => {
   const [translation, setTranslation] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -26,6 +26,7 @@ export const useTranslation = () => {
   const [promptTokens, setPromptTokens] = useState<number | undefined>(undefined);
   const [reasoningTokens, setReasoningTokens] = useState<number | undefined>(undefined);
   const [reasoningUsageUnavailable, setReasoningUsageUnavailable] = useState(false);
+  const [reasoningEnabledForRequest, setReasoningEnabledForRequest] = useState(false);
   const startTimeRef = useRef<number>(0);
 
   // Listen for streaming translation chunks from the main process
@@ -94,6 +95,7 @@ export const useTranslation = () => {
     setPromptTokens(undefined);
     setReasoningTokens(undefined);
     setReasoningUsageUnavailable(false);
+    setReasoningEnabledForRequest(reasoningEnabled);
     setIsTranslating(true);
     window.electron.translation.startTranslation({
       text,
@@ -113,6 +115,7 @@ export const useTranslation = () => {
     setPromptTokens(undefined);
     setReasoningTokens(undefined);
     setReasoningUsageUnavailable(false);
+    setReasoningEnabledForRequest(false);
     originalInputRef.current = '';
   };
 
@@ -132,5 +135,6 @@ export const useTranslation = () => {
     promptTokens,
     reasoningTokens,
     reasoningUsageUnavailable,
+    reasoningEnabledForRequest,
   };
 };

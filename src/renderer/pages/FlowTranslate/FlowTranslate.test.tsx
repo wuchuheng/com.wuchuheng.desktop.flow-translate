@@ -18,6 +18,7 @@ const state = vi.hoisted(() => ({
     promptTokens: undefined as number | undefined,
     reasoningTokens: undefined as number | undefined,
     reasoningUsageUnavailable: false,
+    reasoningEnabledForRequest: false,
   },
 }));
 
@@ -92,6 +93,7 @@ describe('FlowTranslate focus and reasoning feedback', () => {
       promptTokens: undefined,
       reasoningTokens: undefined,
       reasoningUsageUnavailable: false,
+      reasoningEnabledForRequest: false,
     });
     vi.stubGlobal(
       'ResizeObserver',
@@ -133,17 +135,55 @@ describe('FlowTranslate focus and reasoning feedback', () => {
     expect(await screen.findByText('Reasoning: 17 tokens')).not.toBeNull();
   });
 
-  it('renders unavailable reasoning usage only for a reasoning-enabled request', async () => {
+  it('keeps reported reasoning usage visible after translation completes', async () => {
     installElectronMock(true);
-    Object.assign(state.translation, { charsReceived: 10, reasoningUsageUnavailable: true });
+    Object.assign(state.translation, {
+      charsReceived: 10,
+      reasoningTokens: 17,
+      reasoningEnabledForRequest: true,
+    });
+    render(<FlowTranslate />);
+
+    expect(await screen.findByText('Reasoning: 17 tokens')).not.toBeNull();
+  });
+
+  it('reports missing usage for a completed reasoning-enabled request without a count', async () => {
+    installElectronMock(true);
+    Object.assign(state.translation, { charsReceived: 10, reasoningEnabledForRequest: true });
     render(<FlowTranslate />);
 
     expect(await screen.findByText('Reasoning: usage not reported')).not.toBeNull();
+    expect(screen.queryByText('Reasoning unavailable for this endpoint/model')).toBeNull();
+  });
+
+  it('renders a distinct compatibility notice after a reasoning fallback', async () => {
+    installElectronMock(true);
+    Object.assign(state.translation, {
+      charsReceived: 10,
+      reasoningUsageUnavailable: true,
+      reasoningEnabledForRequest: true,
+    });
+    render(<FlowTranslate />);
+
+    expect(await screen.findByText('Reasoning unavailable for this endpoint/model')).not.toBeNull();
+    expect(screen.queryByText('Reasoning: usage not reported')).toBeNull();
+  });
+
+  it('renders no completed reasoning notice for a reasoning-disabled request', async () => {
+    installElectronMock(false);
+    Object.assign(state.translation, { charsReceived: 10, reasoningEnabledForRequest: false });
+    render(<FlowTranslate />);
+
+    await act(async () => Promise.resolve());
+    expect(screen.queryByText('Reasoning: usage not reported')).toBeNull();
+    expect(screen.queryByText('Reasoning unavailable for this endpoint/model')).toBeNull();
 
     cleanup();
-    installElectronMock(false);
+    installElectronMock(true);
+    Object.assign(state.translation, { reasoningUsageUnavailable: true, reasoningEnabledForRequest: false });
     render(<FlowTranslate />);
     await act(async () => Promise.resolve());
     expect(screen.queryByText('Reasoning: usage not reported')).toBeNull();
+    expect(screen.queryByText('Reasoning unavailable for this endpoint/model')).toBeNull();
   });
 });

@@ -40,13 +40,19 @@ describe('useTranslation reasoning usage', () => {
     installElectronMock();
   });
 
-  it('stores reported reasoning tokens and resets them for a new or cleared translation', () => {
-    const { result } = renderHook(() => useTranslation());
+  it('preserves reported reasoning tokens after completion and resets request reasoning state', () => {
+    const { result } = renderHook(() => useTranslation(true));
+
+    act(() => result.current.startTranslation('Original input'));
+
+    expect(
+      (result.current as typeof result.current & { reasoningEnabledForRequest?: boolean }).reasoningEnabledForRequest
+    ).toBe(true);
 
     act(() => {
       translateChunkListener?.({
         chunk: 'Translated',
-        done: false,
+        done: true,
         stats: { charsReceived: 10, reasoningTokens: 17 },
       });
     });
@@ -62,6 +68,19 @@ describe('useTranslation reasoning usage', () => {
     act(() => result.current.resetTranslation());
     expect(
       (result.current as typeof result.current & { reasoningUsageUnavailable?: boolean }).reasoningUsageUnavailable
+    ).toBe(false);
+    expect(
+      (result.current as typeof result.current & { reasoningEnabledForRequest?: boolean }).reasoningEnabledForRequest
+    ).toBe(false);
+  });
+
+  it('records that a new request started with reasoning disabled', () => {
+    const { result } = renderHook(() => useTranslation(false));
+
+    act(() => result.current.startTranslation('Input'));
+
+    expect(
+      (result.current as typeof result.current & { reasoningEnabledForRequest?: boolean }).reasoningEnabledForRequest
     ).toBe(false);
   });
 

@@ -46,7 +46,8 @@ export const FlowTranslate: React.FC = () => {
     promptTokens,
     reasoningTokens,
     reasoningUsageUnavailable,
-  } = useTranslation();
+    reasoningEnabledForRequest,
+  } = useTranslation(aiConfig.enableThinking);
 
   // Footer shortcuts visibility (collapsed by default)
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -436,10 +437,15 @@ export const FlowTranslate: React.FC = () => {
                     ? `last  ${lastSummary.input} input tokens  ${lastSummary.output} output tokens  ${lastSummary.total} total tokens  ${lastSummary.secs.toFixed(2)}s`
                     : '\u00A0'}
                 </span>
-                {!isTranslating &&
-                  aiConfig.enableThinking &&
-                  reasoningUsageUnavailable &&
-                  reasoningTokens === undefined && <span>Reasoning: usage not reported</span>}
+                {!isTranslating && !hasError && reasoningEnabledForRequest && (
+                  <span>
+                    {reasoningUsageUnavailable
+                      ? 'Reasoning unavailable for this endpoint/model'
+                      : reasoningTokens !== undefined
+                        ? `Reasoning: ${reasoningTokens} tokens`
+                        : 'Reasoning: usage not reported'}
+                  </span>
+                )}
                 <span className="ml-2 shrink-0 text-[9px] text-gray-500 dark:text-white/35">ctrl+shift+? help</span>
               </div>
             </div>
