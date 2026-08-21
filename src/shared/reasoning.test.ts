@@ -34,10 +34,13 @@ describe('resolveReasoningProfile', () => {
     expect(Object.keys(buildReasoningRequestFields(profile!)).filter(requestKey => requestKey !== key)).toEqual([]);
   });
 
-  it.each(['openai', 'vllm', 'llamacpp', 'custom', 'ollama', 'unknown'])('%s receives no OpenAI reasoning profile', providerId => {
-    expect(resolveReasoningProfile(providerId, 'model-a', true)).toBeNull();
-    expect(resolveReasoningProfile(providerId, 'model-a', false)).toBeNull();
-  });
+  it.each(['openai', 'vllm', 'llamacpp', 'custom', 'ollama', 'unknown'])(
+    '%s receives no OpenAI reasoning profile',
+    providerId => {
+      expect(resolveReasoningProfile(providerId, 'model-a', true)).toBeNull();
+      expect(resolveReasoningProfile(providerId, 'model-a', false)).toBeNull();
+    }
+  );
 });
 
 describe('reasoning compatibility helpers', () => {
@@ -56,6 +59,8 @@ describe('reasoning compatibility helpers', () => {
   it.each([
     [{ status: 400, message: 'Unsupported parameter: enable_thinking' }, true],
     [{ status: 422, message: 'reasoning is not supported for this model' }, true],
+    [{ status: 400, message: 'I think the parameter temperature is invalid' }, false],
+    [{ status: 422, message: 'Unsupported parameter: temperature' }, false],
     [{ status: 401, message: 'Invalid API key for reasoning endpoint' }, false],
     [{ status: 429, message: 'Rate limit exceeded for thinking requests' }, false],
     [{ status: 408, message: 'Request timeout' }, false],
@@ -63,5 +68,14 @@ describe('reasoning compatibility helpers', () => {
     [new Error('network connection refused'), false],
   ])('classifies reasoning validation errors: %o', (error, expected) => {
     expect(isReasoningParameterError(error)).toBe(expected);
+  });
+
+  it('does not allow callers to mutate stored profile definitions', () => {
+    const profile = resolveReasoningProfile('qwen', 'qwen-plus', true)!;
+    profile.enableFields.enable_thinking = false;
+
+    expect(buildReasoningRequestFields(resolveReasoningProfile('qwen', 'qwen-plus', true)!)).toEqual({
+      enable_thinking: true,
+    });
   });
 });

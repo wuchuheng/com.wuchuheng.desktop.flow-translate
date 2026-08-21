@@ -28,8 +28,8 @@ const reasoningProfiles: Record<ReasoningProfile['id'], ReasoningProfileDefiniti
 };
 
 const unsupportedReasoningTargets = new Set<string>();
-const reservedReasoningParameterPattern = /\b(reasoning|reasoning_effort|thinking|enable_thinking|think)\b/i;
-const validationFailurePattern = /\b(unsupported|unknown|unrecognized|invalid|not allowed|not supported|parameter|field|argument)\b/i;
+const reservedReasoningParameterPattern =
+  /(?:\b(?:parameter|field|argument)\s*[:=]?\s*['"`]?\s*(?:reasoning|reasoning_effort|thinking|enable_thinking|think)\b|\b(?:reasoning|reasoning_effort|thinking|enable_thinking|think)\b\s*(?:(?:parameter|field|argument)\s*)?(?:is\s+)?(?:unsupported|unknown|unrecognized|invalid|not allowed|not supported)\b|\b(?:unsupported|unknown|unrecognized|invalid|not allowed|not supported)\s+(?:(?:parameter|field|argument)\s*[:=]?\s*)?(?:reasoning|reasoning_effort|thinking|enable_thinking|think)\b)/i;
 
 /**
  * Returns the one request dialect supported by a provider, if its OpenAI-compatible
@@ -44,9 +44,15 @@ export const resolveReasoningProfile = (
   if (!profileId) return null;
 
   const profile = reasoningProfiles[profileId];
-  const requestFields = enabled ? profile.enableFields : profile.disableFields;
+  const enableFields = structuredClone(profile.enableFields);
+  const disableFields = structuredClone(profile.disableFields);
 
-  return { ...profile, requestFields };
+  return {
+    ...profile,
+    enableFields,
+    disableFields,
+    requestFields: structuredClone(enabled ? enableFields : disableFields),
+  };
 };
 
 /** Returns a new payload fragment so callers cannot mutate profile definitions. */
@@ -75,7 +81,7 @@ export const markReasoningUnsupportedForTarget = (key: string): void => {
  */
 export const isReasoningParameterError = (error: unknown): boolean => {
   const { status, message } = getErrorDetails(error);
-  return (status === 400 || status === 422) && reservedReasoningParameterPattern.test(message) && validationFailurePattern.test(message);
+  return (status === 400 || status === 422) && reservedReasoningParameterPattern.test(message);
 };
 
 const getProfileId = (providerId: string | undefined, model: string): ReasoningProfile['id'] | null => {
@@ -99,11 +105,12 @@ const getErrorDetails = (error: unknown): { status: number | undefined; message:
   if (!error || typeof error !== 'object') return { status: undefined, message: '' };
 
   const candidate = error as { status?: unknown; message?: unknown; error?: { message?: unknown } };
-  const message = typeof candidate.message === 'string'
-    ? candidate.message
-    : typeof candidate.error?.message === 'string'
-      ? candidate.error.message
-      : '';
+  const message =
+    typeof candidate.message === 'string'
+      ? candidate.message
+      : typeof candidate.error?.message === 'string'
+        ? candidate.error.message
+        : '';
 
   return { status: typeof candidate.status === 'number' ? candidate.status : undefined, message };
 };
