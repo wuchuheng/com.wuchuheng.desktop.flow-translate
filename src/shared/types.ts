@@ -43,6 +43,7 @@ export type StreamChunk = {
   usage?: {
     promptTokens?: number;
     completionTokens?: number;
+    reasoningTokens?: number;
   };
 };
 

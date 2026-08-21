@@ -55,7 +55,14 @@ export const ollamaParser: AiProviderParser = {
 
           try {
             const chunk = JSON.parse(line);
-            if (chunk.message?.content) yield { content: chunk.message.content };
+            const content = typeof chunk.message?.content === 'string' ? chunk.message.content : '';
+            const promptTokens = typeof chunk.prompt_eval_count === 'number' ? chunk.prompt_eval_count : undefined;
+            const completionTokens = typeof chunk.eval_count === 'number' ? chunk.eval_count : undefined;
+            const usage: StreamChunk['usage'] =
+              promptTokens !== undefined || completionTokens !== undefined
+                ? { promptTokens, completionTokens, reasoningTokens: undefined }
+                : undefined;
+            if (content || usage) yield { content, usage };
             if (chunk.done) return;
           } catch {
             // Skip malformed JSON lines
