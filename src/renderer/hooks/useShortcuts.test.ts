@@ -2,13 +2,14 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useShortcuts } from './useShortcuts';
 
-const createKeyEvent = (overrides: Partial<React.KeyboardEvent<HTMLTextAreaElement>> = {}) => ({
-  key: 'j',
-  ctrlKey: true,
-  metaKey: false,
-  preventDefault: vi.fn(),
-  ...overrides,
-}) as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
+const createKeyEvent = (overrides: Partial<React.KeyboardEvent<HTMLTextAreaElement>> = {}) =>
+  ({
+    key: 'j',
+    ctrlKey: true,
+    metaKey: false,
+    preventDefault: vi.fn(),
+    ...overrides,
+  }) as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
 
 describe('useShortcuts Ctrl/Cmd+J newline insertion', () => {
   afterEach(() => {

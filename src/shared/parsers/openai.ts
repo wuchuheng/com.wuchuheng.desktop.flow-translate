@@ -43,6 +43,7 @@ export const openaiParser: AiProviderParser = {
     const profile = resolveReasoningProfile(request.providerId, model, request.enableThinking);
     const targetKey = normalizeEndpointKey(baseUrl, model);
     const requestPayload = {
+      ...request.additionalBody,
       model,
       messages: request.messages,
       stream: true as const,
@@ -85,19 +86,21 @@ export const openaiParser: AiProviderParser = {
 const normalizeUsage = (usage: ChatCompletionChunk['usage']) => {
   const details = usage as ChatCompletionChunk['usage'] & {
     completion_tokens_details?: { reasoning_tokens?: unknown };
-    output_tokens_details?: { thinking_tokens?: unknown };
+    output_tokens_details?: { reasoning_tokens?: unknown; thinking_tokens?: unknown };
   };
   const completionReasoningTokens = details.completion_tokens_details?.reasoning_tokens;
+  const outputReasoningTokens = details.output_tokens_details?.reasoning_tokens;
   const outputThinkingTokens = details.output_tokens_details?.thinking_tokens;
 
   return {
     promptTokens: usage.prompt_tokens,
     completionTokens: usage.completion_tokens,
-    reasoningTokens:
-      typeof completionReasoningTokens === 'number'
-        ? completionReasoningTokens
-        : typeof outputThinkingTokens === 'number'
-          ? outputThinkingTokens
-          : undefined,
+    reasoningTokens: extractReasoningTokens(completionReasoningTokens, outputReasoningTokens, outputThinkingTokens),
+    raw: usage,
   };
+};
+
+/** Normalizes documented reasoning-token fields emitted by compatible providers. */
+const extractReasoningTokens = (...candidates: unknown[]): number | undefined => {
+  return candidates.find((value): value is number => typeof value === 'number');
 };

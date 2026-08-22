@@ -25,6 +25,42 @@ export const cleanModelName = (model: string): string => {
   return model ? model.split(':')[0] : '';
 };
 
+/** Parse an optional provider-specific OpenAI request-body JSON object. */
+export const parseAdditionalRequestBody = (value: string | undefined): Record<string, unknown> => {
+  if (!value?.trim()) return {};
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('Additional request body must be valid JSON.');
+  }
+
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error('Additional request body must be a JSON object.');
+  }
+
+  const body = parsed as Record<string, unknown>;
+  const reservedKeys = Object.keys(body).filter(key => RESERVED_ADDITIONAL_BODY_KEYS.has(key));
+  if (reservedKeys.length > 0) {
+    throw new Error(`Additional request body cannot set: ${reservedKeys.join(', ')}.`);
+  }
+
+  return body;
+};
+
+const RESERVED_ADDITIONAL_BODY_KEYS = new Set([
+  'model',
+  'messages',
+  'stream',
+  'stream_options',
+  'reasoning',
+  'reasoning_effort',
+  'thinking',
+  'enable_thinking',
+  'think',
+]);
+
 /** Nested config object used by addThinkingArgument */
 type NestedConfig = Record<string, unknown>;
 

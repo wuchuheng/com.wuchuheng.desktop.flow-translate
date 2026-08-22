@@ -160,6 +160,8 @@ export type AiConfig = {
   model: string;
   customBaseUrl?: string;
   enableThinking: boolean;
+  /** Optional JSON object merged into OpenAI-compatible request bodies. */
+  additionalRequestBody?: string;
   systemPrompt: string;
   keepAlive?: KeepAliveValue;
 };
@@ -169,6 +171,7 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   apiKey: '',
   model: 'gpt-4o',
   enableThinking: false,
+  additionalRequestBody: '',
   systemPrompt:
     'Translate the following content into English. Output ONLY the English translation.\nIf the English content input by the user contains grammatical errors, correct them directly.\nAlso, if the content being translated needs polishing to ensure fluency, polish the manuscript directly.\n\n<content>\n{text}\n</content>',
   keepAlive: -1,

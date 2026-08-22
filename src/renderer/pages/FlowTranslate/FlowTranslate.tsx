@@ -58,16 +58,37 @@ export const FlowTranslate: React.FC = () => {
     output: number;
     total: number;
     secs: number;
+    reasoningTokens?: number;
+    reasoningUsageUnavailable: boolean;
+    reasoningEnabled: boolean;
   } | null>(null);
   const wasTranslatingRef = useRef(false);
   useEffect(() => {
     if (wasTranslatingRef.current && !isTranslating && !hasError && charsReceived > 0) {
       const inputTk = promptTokens ?? 0;
       const outputTk = completionTokens ?? Math.round(charsReceived / 4);
-      setLastSummary({ input: inputTk, output: outputTk, total: inputTk + outputTk, secs: elapsedMs / 1000 });
+      setLastSummary({
+        input: inputTk,
+        output: outputTk,
+        total: inputTk + outputTk,
+        secs: elapsedMs / 1000,
+        reasoningTokens,
+        reasoningUsageUnavailable,
+        reasoningEnabled: reasoningEnabledForRequest,
+      });
     }
     wasTranslatingRef.current = isTranslating;
-  }, [isTranslating, hasError, charsReceived, completionTokens, promptTokens, elapsedMs]);
+  }, [
+    isTranslating,
+    hasError,
+    charsReceived,
+    completionTokens,
+    promptTokens,
+    elapsedMs,
+    reasoningTokens,
+    reasoningUsageUnavailable,
+    reasoningEnabledForRequest,
+  ]);
 
   const {
     mode,
@@ -434,10 +455,10 @@ export const FlowTranslate: React.FC = () => {
               <div className="flex items-center justify-between font-mono text-[10px] text-gray-500 dark:text-white/35">
                 <span>
                   {lastSummary
-                    ? `last  ${lastSummary.input} input tokens  ${lastSummary.output} output tokens  ${lastSummary.total} total tokens  ${lastSummary.secs.toFixed(2)}s`
+                    ? `Latest: ${lastSummary.input}t in  ${lastSummary.output}t out  ${lastSummary.total}t total${lastSummary.reasoningTokens !== undefined ? `  r:${lastSummary.reasoningTokens}t` : ''}  ${lastSummary.secs.toFixed(2)}s`
                     : '\u00A0'}
                 </span>
-                {!isTranslating && !hasError && reasoningEnabledForRequest && (
+                {!lastSummary && !isTranslating && !hasError && reasoningEnabledForRequest && (
                   <span>
                     {reasoningUsageUnavailable
                       ? 'Reasoning unavailable for this endpoint/model'

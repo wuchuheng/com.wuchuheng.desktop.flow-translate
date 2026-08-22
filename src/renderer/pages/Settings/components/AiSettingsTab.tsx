@@ -13,7 +13,7 @@ import { useOpenAI } from '../../../hooks/useOpenAI';
 import { AI_PROVIDER_CATALOG, PARSERS, AiConfig, DEFAULT_AI_CONFIG, CONFIG_KEYS } from '@/shared/constants';
 import type { ChatRequest } from '@/shared/types';
 import { KEEP_ALIVE_OPTIONS } from '@/shared/types';
-import { getProviderById, getBaseUrl, isOllamaProvider } from '@/shared/ai-helper';
+import { getProviderById, getBaseUrl, isOllamaProvider, parseAdditionalRequestBody } from '@/shared/ai-helper';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -101,6 +101,7 @@ export const AiSettingsTab: React.FC = () => {
         messages: newMessages.map(m => ({ role: m.role, content: m.content })),
         enableThinking: !!values.enableThinking,
         providerId: values.providerId,
+        additionalBody: parseAdditionalRequestBody(values.additionalRequestBody),
       };
 
       let fullContent = '';
@@ -314,6 +315,28 @@ export const AiSettingsTab: React.FC = () => {
                 <InfoCircleOutlined className="text-gray-400" />
               </Tooltip>
             </div>
+
+            {!isOllamaProvider(selectedProviderId) && (
+              <Form.Item
+                label="Additional Request Body (JSON)"
+                name="additionalRequestBody"
+                help="Optional provider-specific fields. Core request and reasoning fields remain controlled by the app."
+                rules={[
+                  {
+                    validator: (_, value: string | undefined) => {
+                      try {
+                        parseAdditionalRequestBody(value);
+                        return Promise.resolve();
+                      } catch (error) {
+                        return Promise.reject(error);
+                      }
+                    },
+                  },
+                ]}
+              >
+                <TextArea rows={4} placeholder={'{\n  "provider": { "order": ["example"] }\n}'} />
+              </Form.Item>
+            )}
 
             <Form.Item label="System Prompt" name="systemPrompt" help="Default prompt used for translation task.">
               <TextArea rows={4} />

@@ -34,6 +34,8 @@ export type ChatRequest = {
   }>;
   enableThinking: boolean;
   providerId?: string;
+  /** Provider-specific fields merged before app-controlled OpenAI request fields. */
+  additionalBody?: Record<string, unknown>;
 };
 
 /** Per-chunk data from SSE stream */
@@ -46,6 +48,8 @@ export type StreamChunk = {
     promptTokens?: number;
     completionTokens?: number;
     reasoningTokens?: number;
+    /** Original provider usage payload retained for main-process debug logging only. */
+    raw?: unknown;
   };
 };
 

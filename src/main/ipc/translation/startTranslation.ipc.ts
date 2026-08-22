@@ -6,7 +6,7 @@ import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
 import { createHistory, updateTransaction } from '../../database/repositories/history.repository';
 import { PARSERS, CONFIG_KEYS, AiConfig, DEFAULT_AI_CONFIG } from '@/shared/constants';
-import { getProviderById, getBaseUrl } from '@/shared/ai-helper';
+import { getProviderById, getBaseUrl, parseAdditionalRequestBody } from '@/shared/ai-helper';
 import { clearDraftCache } from '../draft/save.ipc';
 import type { ChatRequest } from '@/shared/types';
 
@@ -61,6 +61,7 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
       messages,
       enableThinking: !!enableThinking,
       providerId: config.providerId,
+      additionalBody: parseAdditionalRequestBody(config.additionalRequestBody),
     };
 
     let fullTranslation = '';
@@ -68,18 +69,29 @@ const startTranslation = async (payload: { text: string; backspaceCount: number;
     let completionTokens: number | undefined;
     let promptTokens: number | undefined;
     let reasoningTokens: number | undefined;
+    let hasLoggedUsage = false;
     for await (const sc of parser.streamChat(baseUrl, apiKey || '', chatRequest)) {
       fullTranslation += sc.content;
       totalChars += sc.content.length;
       if (sc.usage?.completionTokens !== undefined) completionTokens = sc.usage.completionTokens;
       if (sc.usage?.promptTokens !== undefined) promptTokens = sc.usage.promptTokens;
       if (sc.usage?.reasoningTokens !== undefined) reasoningTokens = sc.usage.reasoningTokens;
+      if (sc.usage?.raw !== undefined && !hasLoggedUsage) {
+        hasLoggedUsage = true;
+        logger.verbose(`AI usage [provider=${config.providerId}, model=${model}]: ${JSON.stringify(sc.usage.raw)}`);
+      }
+      console.log(fullTranslation);
+
       onTranslateChunk({
         chunk: sc.content,
         done: false,
         ...(sc.reasoningUnavailable ? { reasoningUnavailable: true } : {}),
         stats: { charsReceived: totalChars, completionTokens, promptTokens, reasoningTokens },
       });
+    }
+
+    if (fullTranslation) {
+      logger.verbose(`AI response [provider=${config.providerId}, model=${model}]:\n${fullTranslation}`);
     }
 
     onTranslateChunk({ chunk: '', done: true });

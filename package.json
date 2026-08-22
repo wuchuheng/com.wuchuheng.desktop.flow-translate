@@ -78,6 +78,7 @@
   "dependencies": {
     "better-sqlite3": "^11.10.0",
     "chalk": "^4.1.2",
+    "electron-chrome-extensions": "^4.9.0",
     "electron-updater": "^6.7.3",
     "react-markdown": "^10.1.0",
     "semver": "^7.7.4",
